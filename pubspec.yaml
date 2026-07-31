@@ -1,0 +1,29 @@
+name: tidal
+description: "A slow, disappearing messenger for two people. The cat carries the letters."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/cats/
+
+  fonts:
+    - family: Nunito
+      fonts:
+        # Variable font: one file covers ExtraLight..Black. Flutter drives the
+        # weight axis from FontWeight, so no per-weight files are needed.
+        - asset: assets/fonts/Nunito-Variable.ttf

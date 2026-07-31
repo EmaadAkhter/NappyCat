@@ -1,0 +1,125 @@
+rules_version = '2';
+
+// Tidal — two-person async messenger.
+//
+// The load-bearing rule here is the send rate limit. It works by requiring the
+// message create and the users/{uid}.lastSentAt stamp to land in the SAME atomic
+// batch: getAfter() sees the post-commit state, so a client that skips the stamp
+// write is denied. Fails closed. See MessageService.send() — batching is mandatory.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- the only lines that differ between prod and dev ----
+    function sendCooldown() { return duration.value(8,  'h'); }
+    function openTtl()      { return duration.value(16, 'h'); }
+    function unopenedMin()  { return duration.value(89, 'd'); }
+    function unopenedMax()  { return duration.value(91, 'd'); }
+
+    function signedIn() { return request.auth != null; }
+    function uid()      { return request.auth.uid; }
+
+    match /users/{userId} {
+      allow read: if signedIn() && userId == uid();
+
+      allow create: if signedIn() && userId == uid()
+        && request.resource.data.keys().hasOnly(['displayName','catId','createdAt'])
+        && request.resource.data.keys().hasAll(['displayName','catId','createdAt'])
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() > 0
+        && request.resource.data.displayName.size() <= 24
+        && request.resource.data.catId is string;
+
+      // (A) profile / token / pairing writes. May NEVER touch lastSentAt.
+      allow update: if signedIn() && userId == uid()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['displayName','catId','fcmToken','pairId'])
+        && (!('pairId' in resource.data)
+            || request.resource.data.pairId == resource.data.pairId);
+
+      // (B) the rate-limit stamp. serverTimestamp() only, forward only,
+      //     once per cooldown. This is what makes the message rule enforceable.
+      allow update: if signedIn() && userId == uid()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastSentAt'])
+        && request.resource.data.lastSentAt == request.time
+        && (!('lastSentAt' in resource.data)
+            || request.time >= resource.data.lastSentAt + sendCooldown());
+
+      allow delete: if signedIn() && userId == uid();
+    }
+
+    match /pairs/{pairId} {
+      // The doc ID is the invite code, so joiners get() it directly.
+      // list is never allowed, so codes are not enumerable.
+      function joinable() {
+        return resource.data.memberIds.size() == 1
+            && request.time < resource.data.inviteExpiresAt;
+      }
+      function member() { return signedIn() && uid() in resource.data.memberIds; }
+
+      allow get:  if signedIn() && (member() || joinable());
+      allow list: if false;
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['memberIds','createdAt','inviteExpiresAt'])
+        && request.resource.data.memberIds == [uid()]
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.inviteExpiresAt > request.time
+        && request.resource.data.inviteExpiresAt < request.time + duration.value(24,'h')
+        && pairId.size() >= 8;
+
+      allow update: if signedIn() && joinable() && !(uid() in resource.data.memberIds)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds'])
+        && request.resource.data.memberIds == resource.data.memberIds.concat([uid()]);
+
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        function pair()   { return get(/databases/$(database)/documents/pairs/$(pairId)).data; }
+        function inPair() { return signedIn() && uid() in pair().memberIds; }
+        function d()      { return request.resource.data; }
+
+        allow read: if inPair();
+
+        allow create: if inPair()
+          && d().keys().hasOnly(['senderId','recipientId','text','sentAt',
+                                 'openedAt','expiresAt','senderCatId','senderName'])
+          && d().keys().hasAll(['senderId','recipientId','text','sentAt',
+                                'openedAt','expiresAt'])
+          && d().senderId == uid()
+          && d().recipientId != uid()
+          && d().recipientId in pair().memberIds
+          && d().text is string && d().text.size() > 0 && d().text.size() <= 280
+          && d().sentAt == request.time              // forces serverTimestamp()
+          && d().openedAt == null                    // present-and-null: the inbox query needs it
+          && d().expiresAt is timestamp
+          && d().expiresAt > request.time + unopenedMin()
+          && d().expiresAt < request.time + unopenedMax()
+          // ---- RATE LIMIT ----
+          // Only legal inside a batch that also stamps users/{uid}.lastSentAt to
+          // now, which rule (B) permits once per cooldown. No batch -> stale value
+          // -> denied.
+          && getAfter(/databases/$(database)/documents/users/$(uid()))
+               .data.lastSentAt == request.time;
+
+        // The one legal mutation: the recipient opens it, exactly once.
+        // openedAt is a CLIENT timestamp so an offline widget tap survives;
+        // rules enforce the relationship and sanity bounds instead.
+        allow update: if inPair()
+          && resource.data.recipientId == uid()
+          && resource.data.openedAt == null
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['openedAt','expiresAt'])
+          && d().openedAt is timestamp
+          && d().expiresAt == d().openedAt + openTtl()
+          && d().openedAt <= request.time + duration.value(5,'m')
+          && d().openedAt >= request.time - duration.value(30,'d');
+
+        allow delete: if false;   // messages leave only via TTL
+      }
+    }
+
+    match /{document=**} { allow read, write: if false; }
+  }
+}
