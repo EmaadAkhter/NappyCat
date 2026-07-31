@@ -27,15 +27,21 @@ class WidgetBridge {
       HomeWidget.setAppGroupId(appGroupId);
 
   static Future<void> publish(WidgetPayload payload) async {
-    await _prepare();
-    await HomeWidget.saveWidgetData<String>(
-      stateKey,
-      jsonEncode(payload.toJson()),
-    );
-    await HomeWidget.updateWidget(
-      iOSName: iOSWidgetName,
-      androidName: androidWidgetName,
-    );
+    try {
+      await _prepare();
+      await HomeWidget.saveWidgetData<String>(
+        stateKey,
+        jsonEncode(payload.toJson()),
+      );
+      await HomeWidget.updateWidget(
+        iOSName: iOSWidgetName,
+        androidName: androidWidgetName,
+      );
+    } catch (_) {
+      // The widget is a nicety, never a dependency. It legitimately fails when
+      // no widget has been placed yet, and on Android until the provider exists.
+      // Losing an update must never take the app down with it.
+    }
   }
 
   /// What the widget left behind when it was tapped, or null.

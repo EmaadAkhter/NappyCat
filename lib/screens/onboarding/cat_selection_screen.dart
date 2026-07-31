@@ -134,8 +134,14 @@ class _BreedCard extends StatelessWidget {
                     color: breed.accent.withValues(alpha: 0.85),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(breed.hoodLabel,
-                      style: CozyText.rounded(11, weight: FontWeight.w700)),
+                  // Narrow screens wrap this to two lines and unbalance the
+                  // card, so keep it on one and let it shrink instead.
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(breed.hoodLabel,
+                        maxLines: 1,
+                        style: CozyText.rounded(11, weight: FontWeight.w700)),
+                  ),
                 ),
               ),
               Expanded(
