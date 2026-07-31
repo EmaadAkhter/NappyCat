@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "397624542945",
+    "project_id": "napcat-2e042",
+    "storage_bucket": "napcat-2e042.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:397624542945:android:3b7c2531f3feae1443d9a0",
+        "android_client_info": {
+          "package_name": "com.mypeblo.tidal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAv0W7cf4rswW5YSp--0aaary1U9JnXZWk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
