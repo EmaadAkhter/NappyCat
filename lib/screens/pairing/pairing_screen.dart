@@ -186,6 +186,23 @@ class _PairingScreenState extends State<PairingScreen> {
               Text('Waiting for them to join…', style: CozyText.caption),
             ],
           ),
+          const SizedBox(height: 16),
+          // Only one of you should create the invite. Without this the person
+          // who created one first is stuck staring at their own code with no
+          // way to enter the other's.
+          Bouncy(
+            onTap: () => setState(() {
+              _mode = _Mode.enterCode;
+              _error = null;
+            }),
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text('They sent me a code instead →',
+                  style: CozyText.rounded(13,
+                      weight: FontWeight.w700,
+                      color: CozyColors.textSecondary)),
+            ),
+          ),
         ],
       );
 
@@ -214,12 +231,13 @@ class _PairingScreenState extends State<PairingScreen> {
           const SizedBox(height: 8),
           Bouncy(
             onTap: () => setState(() {
-              _mode = _Mode.choose;
+              _mode = _code == null ? _Mode.choose : _Mode.showCode;
               _error = null;
             }),
             child: Padding(
               padding: const EdgeInsets.all(8),
-              child: Text('Back', style: CozyText.muted),
+              child: Text(_code == null ? 'Back' : 'Back to my code',
+                  style: CozyText.muted),
             ),
           ),
         ],

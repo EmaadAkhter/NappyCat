@@ -171,6 +171,39 @@ void main() {
     );
   });
 
+  testWidgets('someone who created an invite can switch to joining instead',
+      (_) async {
+    // The common mistake is both people tapping Create. Whoever went first must
+    // be able to abandon their empty invite and enter the other's code —
+    // pairId being write-once stranded them permanently.
+    final mine = await pairing.createInvite(me);
+    expect((await pairing.members(mine).first), [me]);
+
+    await http.patch(
+      Uri.parse('$base/v1/projects/$_project/databases/(default)/documents/pairs/THEIRS01'),
+      headers: {'Authorization': 'Bearer owner', 'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'fields': {
+          'memberIds': {
+            'arrayValue': {
+              'values': [
+                {'stringValue': 'partner-uid'}
+              ]
+            }
+          },
+          'createdAt': {'timestampValue': '2026-01-01T00:00:00Z'},
+          'inviteExpiresAt': {'timestampValue': '2099-01-01T00:00:00Z'},
+        }
+      }),
+    );
+
+    await pairing.join(uid: me, code: 'THEIRS01');
+
+    final switched =
+        await auth.watch(me).firstWhere((u) => u?.pairId == 'THEIRS01');
+    expect(switched!.pairId, 'THEIRS01');
+  });
+
   testWidgets('an unknown code fails clearly rather than hanging', (_) async {
     await expectLater(
       pairing.join(uid: me, code: 'ZZZZZZZZ'),
