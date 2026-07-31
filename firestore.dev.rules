@@ -40,11 +40,17 @@ service cloud.firestore {
       // No fcmToken: this app sends no push. The widget stays fresh via
       // background refresh writing the shared cache, which needs no server,
       // no credentials, and no billing.
+      // pairId is write-once. Uses data.get(field, default) rather than
+      // `!('pairId' in resource.data) || resource.data.pairId`: the `||` form
+      // still evaluates the right-hand side when the field is absent, which
+      // raises an evaluation error and denies the very first write — so a user
+      // could never be assigned a pair at all.
       allow update: if signedIn() && userId == uid()
         && request.resource.data.diff(resource.data).affectedKeys()
              .hasOnly(['displayName','catId','pairId','lastSeenAt'])
-        && (!('pairId' in resource.data)
-            || request.resource.data.pairId == resource.data.pairId);
+        && (resource.data.get('pairId', null) == null
+            || request.resource.data.get('pairId', null)
+                 == resource.data.get('pairId', null));
 
       // (B) the rate-limit stamp. serverTimestamp() only, forward only,
       //     once per cooldown. This is what makes the message rule enforceable.

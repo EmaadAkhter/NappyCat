@@ -108,21 +108,36 @@ class _RootState extends State<_Root> {
         }
 
         if (!me.isPaired) {
-          return PairingScreen(
-            uid: _uid!,
-            pairing: services.pairing,
-            onPaired: (_) {}, // the user-doc stream re-routes on its own
-          );
+          return PairingScreen(uid: _uid!, pairing: services.pairing);
         }
 
-        if (!_showedGuide) {
-          return WidgetGuideScreen(
-            breed: CatBreed.fromId(me.catId),
-            onFinish: () => setState(() => _showedGuide = true),
-          );
-        }
+        // Having a pairId is NOT the same as being paired: creating an invite
+        // sets it immediately so the code survives an app restart, but the
+        // other person has not joined yet. Routing on pairId alone navigated
+        // straight past the pairing screen, so the creator never saw their own
+        // code. Wait for the pair to actually have two members.
+        return StreamBuilder<List<String>>(
+          stream: services.pairing.members(me.pairId!),
+          builder: (context, pairSnap) {
+            if (!pairSnap.hasData) return const _Loading();
+            if (pairSnap.data!.length < 2) {
+              return PairingScreen(
+                uid: _uid!,
+                pairing: services.pairing,
+                resumeCode: me.pairId,
+              );
+            }
 
-        return _Home(me: me);
+            if (!_showedGuide) {
+              return WidgetGuideScreen(
+                breed: CatBreed.fromId(me.catId),
+                onFinish: () => setState(() => _showedGuide = true),
+              );
+            }
+
+            return _Home(me: me);
+          },
+        );
       },
     );
   }

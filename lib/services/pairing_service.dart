@@ -30,6 +30,7 @@ class PairingService {
   /// Creates an invite and returns its code. Retries on the astronomically
   /// unlikely collision, where create fails because the doc already exists.
   Future<String> createInvite(String uid) async {
+    Object? lastError;
     for (var attempt = 0; attempt < 5; attempt++) {
       final code = _newCode();
       try {
@@ -42,11 +43,13 @@ class PairingService {
         return code;
       } on FirebaseException catch (e) {
         if (e.code != 'permission-denied') rethrow;
-        // permission-denied here means the doc already existed (create rules
-        // only apply to non-existent docs), so try another code.
+        // A collision retries on a new code. But permission-denied also covers
+        // every rules rejection, so keep the cause — swallowing it is what made
+        // this failure impossible to diagnose from the UI.
+        lastError = e;
       }
     }
-    throw StateError('could not allocate an invite code');
+    throw StateError('could not allocate an invite code: $lastError');
   }
 
   /// Joins an existing invite. Throws [PairingError] with something a human can

@@ -25,14 +25,31 @@ class AuthService {
       userRef(uid).snapshots().map((s) => s.exists ? AppUser.fromDoc(s) : null);
 
   /// Creates the profile on first run, updates it thereafter. Split because the
-  /// rules deliberately allow different key sets for create and update.
+  /// rules deliberately allow different key sets for create and update, so a
+  /// single merged write cannot satisfy both.
+  ///
+  /// The existence check MUST come from the server. A cached `get` can report a
+  /// document that no longer exists, which sends this down the update path; the
+  /// update then applies locally, resolves as if it worked, and the profile is
+  /// never actually created. Everything downstream that needs the user document
+  /// — pairing especially — then fails with an opaque permission error.
   Future<void> saveProfile({
     required String uid,
     required String displayName,
     required String catId,
   }) async {
     final ref = userRef(uid);
-    if ((await ref.get()).exists) {
+
+    bool exists;
+    try {
+      exists = (await ref.get(const GetOptions(source: Source.server))).exists;
+    } on FirebaseException {
+      // Offline. Fall back to the cache — wrong only in the rare case above,
+      // and better than refusing to save at all.
+      exists = (await ref.get()).exists;
+    }
+
+    if (exists) {
       await ref.update({'displayName': displayName, 'catId': catId});
     } else {
       await ref.set({

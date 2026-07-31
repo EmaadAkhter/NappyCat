@@ -12,12 +12,16 @@ class PairingScreen extends StatefulWidget {
     super.key,
     required this.uid,
     required this.pairing,
-    required this.onPaired,
+    this.resumeCode,
   });
 
   final String uid;
   final PairingService pairing;
-  final ValueChanged<String> onPaired;
+
+  /// An invite this user already created but nobody has joined yet. Shown
+  /// straight away so the code survives leaving the app — without this the
+  /// creator can never get their code back.
+  final String? resumeCode;
 
   @override
   State<PairingScreen> createState() => _PairingScreenState();
@@ -26,8 +30,9 @@ class PairingScreen extends StatefulWidget {
 enum _Mode { choose, showCode, enterCode }
 
 class _PairingScreenState extends State<PairingScreen> {
-  _Mode _mode = _Mode.choose;
-  String? _code;
+  late _Mode _mode =
+      widget.resumeCode == null ? _Mode.choose : _Mode.showCode;
+  late String? _code = widget.resumeCode;
   String? _error;
   bool _busy = false;
   final _input = TextEditingController();
@@ -48,10 +53,8 @@ class _PairingScreenState extends State<PairingScreen> {
         _mode = _Mode.showCode;
         _busy = false;
       });
-      // The pair doc is live, so this advances by itself when they join.
-      widget.pairing.members(code).listen((members) {
-        if (members.length >= 2 && mounted) widget.onPaired(code);
-      });
+      // No listener here: _Root watches the pair document and re-routes on its
+      // own once the second member joins.
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -67,9 +70,8 @@ class _PairingScreenState extends State<PairingScreen> {
       _error = null;
     });
     try {
-      final code = await widget.pairing.join(uid: widget.uid, code: _input.text);
-      if (!mounted) return;
-      widget.onPaired(code);
+      await widget.pairing.join(uid: widget.uid, code: _input.text);
+      // _Root re-routes once the pair doc shows two members.
     } on PairingError catch (e) {
       if (!mounted) return;
       setState(() {

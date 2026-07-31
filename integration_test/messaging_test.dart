@@ -25,10 +25,13 @@ import 'package:tidal/firebase_options.dart';
 import 'package:tidal/services/clock.dart';
 import 'package:tidal/services/message_service.dart';
 
-const _project = 'demo-tidal';
-final _base = 'http://${Config.emulatorHost}:${Config.firestoreEmulatorPort}';
-final _docs =
-    '$_base/v1/projects/$_project/databases/(default)/documents';
+/// Must match the client's project, not a hardcoded guess. The Firestore
+/// emulator namespaces data per project id, so seeding under a different one
+/// writes to a database the app can never see — and every read silently comes
+/// back empty.
+final _project = DefaultFirebaseOptions.currentPlatform.projectId;
+String get _base => 'http://${Config.emulatorHost}:${Config.firestoreEmulatorPort}';
+String get _docs => '$_base/v1/projects/$_project/databases/(default)/documents';
 
 /// Writes bypassing the security rules, so the test can set up a second user
 /// it has no credentials for.
