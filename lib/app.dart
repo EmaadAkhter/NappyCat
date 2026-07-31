@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'config.dart';
@@ -15,6 +16,7 @@ import 'screens/pairing/pairing_screen.dart';
 import 'services/auth_service.dart';
 import 'services/idle_chatter.dart';
 import 'services/services.dart';
+import 'services/widget_bridge.dart';
 import 'theme/cozy_colors.dart';
 import 'theme/cozy_text.dart';
 import 'theme/cozy_theme.dart';
@@ -129,10 +131,72 @@ class _RootState extends State<_Root> {
 /// Home, driven by the two live queries and composed into the same
 /// [WidgetPayload] the native widgets will read — so the in-app hero card and
 /// the home-screen widget can never disagree about what the cat is doing.
-class _Home extends StatelessWidget {
+class _Home extends StatefulWidget {
   const _Home({required this.me});
 
   final AppUser me;
+
+  @override
+  State<_Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<_Home> with WidgetsBindingObserver {
+  AppUser get me => widget.me;
+
+  /// Publishing on every rebuild would hammer the App Group and the widget
+  /// reload budget, so only publish when the blob actually changes.
+  String? _lastPublished;
+
+  /// Chosen once per session, not per rebuild. A fresh random line every build
+  /// would make every payload look different and defeat the dedup above.
+  final String _idleLine = IdleChatter.random();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _reconcile();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // The widget tap launches the app, so resume is when the breadcrumb is
+    // waiting. Cold start is covered by initState.
+    if (state == AppLifecycleState.resumed) _reconcile();
+  }
+
+  /// Flushes a widget tap to Firestore. The open is fire-and-forget through the
+  /// SDK: offline it persists to the on-disk mutation queue and lands on the
+  /// next connection, even if the app is killed in between.
+  Future<void> _reconcile() async {
+    final pending = await WidgetBridge.takePendingOpen();
+    if (pending == null) return;
+    await WidgetBridge.clearPendingOpen();
+
+    try {
+      await services.messages.open(
+        pairId: me.pairId!,
+        messageId: pending.messageId,
+        openedAt: pending.tappedAt,
+      );
+    } catch (_) {
+      // Already opened, or already gone. The widget has shown it either way,
+      // and the stream is the source of truth from here.
+    }
+  }
+
+  void _publish(WidgetPayload payload) {
+    final encoded = jsonEncode(payload.toJson());
+    if (encoded == _lastPublished) return;
+    _lastPublished = encoded;
+    WidgetBridge.publish(payload);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -160,9 +224,13 @@ class _Home extends StatelessWidget {
               expiresAt: open?.expiresAt,
               partnerName: letter?.senderName,
               partnerCatId: letter?.senderCatId,
-              idleLine: IdleChatter.random(),
+              idleLine: _idleLine,
               canSendAt: me.lastSentAt?.add(Config.sendCooldown),
             );
+
+            // One derivation, one writer — the widget and this screen render
+            // from the identical payload, so they cannot disagree.
+            _publish(payload);
 
             return HomeScreen(
               myBreed: CatBreed.fromId(me.catId),

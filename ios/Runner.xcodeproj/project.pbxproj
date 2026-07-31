@@ -7,19 +7,43 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		04F50A87512F09D22080B8BB /* TidalTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C666FBADFA351A923556B5E5 /* TidalTimelineProvider.swift */; };
+		055CA04D0B5F38D8B7D392BD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2433774C3998EABD69BC2900 /* Assets.xcassets */; };
+		0D81C8485CB21116FBACBB01 /* TidalWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040CFDBED560E394BE8CA9F5 /* TidalWidgetViews.swift */; };
+		0DB77E284C782B72C64CCE15 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70919A3D4B603E07FB69A739 /* Foundation.framework */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
+		153C21B31386BCA969163858 /* TidalTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DD7A10C89A915F7006ACCA /* TidalTimelineProvider.swift */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
+		3737181A030FFF3E8271A212 /* OpenLetterIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECB5E76256F2035FCCA3FA85 /* OpenLetterIntent.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
+		42D08A4872E8C8A3E90C1E72 /* CozyTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4C6E36782C4A55DD609C7B0 /* CozyTheme.swift */; };
+		4BA478548BCEFA2B16838BF9 /* TidalWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC70E3623974E9827D08A2E /* TidalWidgetBundle.swift */; };
+		6750E8871F84B9625D826AD9 /* TidalWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21627A61BC13E4551FF28EB1 /* TidalWidgetViews.swift */; };
+		707D73316D90D71DA4077BF9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8223723C81CC62503E75386B /* Assets.xcassets */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
+		74863B097EF88943B727B02B /* TidalWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = E899D2B0D5C9C294E9BBF8A1 /* TidalWidgetBundle.swift */; };
 		7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */; };
 		78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */; };
+		82D99D90556C34A499BE6566 /* SharedState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAABEC058058DB3DAC8221CE /* SharedState.swift */; };
+		85710921DE3B0DCCAA13DC96 /* TidalWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D79EDE52D8D3005CD9759953 /* TidalWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		8C0E3BC054840D453A2340E6 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70919A3D4B603E07FB69A739 /* Foundation.framework */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		B17C857E6A800709E8ED5F7B /* OpenLetterIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 143B6AEBD46A76CBCD0F20E1 /* OpenLetterIntent.swift */; };
+		B755971FBACCF5E26BC4CE23 /* SharedState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B67AC23DA185237EB5F22B4E /* SharedState.swift */; };
 		D8D7AA70D774836F9C9E2E74 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B17D0B28A5F9B65457903CA9 /* GoogleService-Info.plist */; };
+		DD2120826577F64A787ABFD8 /* CozyTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 536027A9C86D17780549C472 /* CozyTheme.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		08CE07D117029CF853646717 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CA0846C6DC18E204A9AB90F6;
+			remoteInfo = TidalWidget;
+		};
 		331C8085294A63A400263BE5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
@@ -30,6 +54,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		600B3B71AC23DD108E1E750B /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				85710921DE3B0DCCAA13DC96 /* TidalWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9705A1C41CF9048500538489 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -43,16 +78,27 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		040CFDBED560E394BE8CA9F5 /* TidalWidgetViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TidalWidgetViews.swift; path = Views/TidalWidgetViews.swift; sourceTree = "<group>"; };
+		12DD7A10C89A915F7006ACCA /* TidalTimelineProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TidalTimelineProvider.swift; path = Timeline/TidalTimelineProvider.swift; sourceTree = "<group>"; };
+		143B6AEBD46A76CBCD0F20E1 /* OpenLetterIntent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OpenLetterIntent.swift; path = Intents/OpenLetterIntent.swift; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
+		1E85BAC1B1FA96AB9FFDC0F6 /* TidalWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TidalWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		21627A61BC13E4551FF28EB1 /* TidalWidgetViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TidalWidgetViews.swift; path = Views/TidalWidgetViews.swift; sourceTree = "<group>"; };
+		2433774C3998EABD69BC2900 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
+		41B51D26B109EDE913468299 /* TidalWidget.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = TidalWidget.entitlements; sourceTree = "<group>"; };
+		536027A9C86D17780549C472 /* CozyTheme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CozyTheme.swift; path = Shared/CozyTheme.swift; sourceTree = "<group>"; };
+		70919A3D4B603E07FB69A739 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		78E0A7A72DC9AD7400C4905E /* FlutterGeneratedPluginSwiftPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = FlutterGeneratedPluginSwiftPackage; path = Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
+		8223723C81CC62503E75386B /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		93386776A00CA3AD238C3FDD /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
 		9740EEB31CF90195004384FC /* Generated.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Generated.xcconfig; path = Flutter/Generated.xcconfig; sourceTree = "<group>"; };
 		97C146EE1CF9000F007C117D /* Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Runner.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -61,9 +107,27 @@
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B17D0B28A5F9B65457903CA9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "Runner/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B67AC23DA185237EB5F22B4E /* SharedState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SharedState.swift; path = Shared/SharedState.swift; sourceTree = "<group>"; };
+		BBC70E3623974E9827D08A2E /* TidalWidgetBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TidalWidgetBundle.swift; sourceTree = "<group>"; };
+		C666FBADFA351A923556B5E5 /* TidalTimelineProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TidalTimelineProvider.swift; path = Timeline/TidalTimelineProvider.swift; sourceTree = "<group>"; };
+		CAABEC058058DB3DAC8221CE /* SharedState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SharedState.swift; path = Shared/SharedState.swift; sourceTree = "<group>"; };
+		D79EDE52D8D3005CD9759953 /* TidalWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TidalWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		DD584DBE2A345A4C19CDBD0A /* TidalWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TidalWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		E33A7804A904D5B547D993FE /* Runner.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
+		E4C6E36782C4A55DD609C7B0 /* CozyTheme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CozyTheme.swift; path = Shared/CozyTheme.swift; sourceTree = "<group>"; };
+		E899D2B0D5C9C294E9BBF8A1 /* TidalWidgetBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TidalWidgetBundle.swift; sourceTree = "<group>"; };
+		ECB5E76256F2035FCCA3FA85 /* OpenLetterIntent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OpenLetterIntent.swift; path = Intents/OpenLetterIntent.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		48B0E4F65098498B0940D78A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8C0E3BC054840D453A2340E6 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		97C146EB1CF9000F007C117D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -81,6 +145,31 @@
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
 			);
 			path = RunnerTests;
+			sourceTree = "<group>";
+		};
+		879850EDF6DC7C22FE01F123 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				EE397944F2E96DFB3C2D02D7 /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		8981B9DCF38C53E6EC4BA47F /* TidalWidget */ = {
+			isa = PBXGroup;
+			children = (
+				ECB5E76256F2035FCCA3FA85 /* OpenLetterIntent.swift */,
+				E4C6E36782C4A55DD609C7B0 /* CozyTheme.swift */,
+				B67AC23DA185237EB5F22B4E /* SharedState.swift */,
+				BBC70E3623974E9827D08A2E /* TidalWidgetBundle.swift */,
+				C666FBADFA351A923556B5E5 /* TidalTimelineProvider.swift */,
+				040CFDBED560E394BE8CA9F5 /* TidalWidgetViews.swift */,
+				2433774C3998EABD69BC2900 /* Assets.xcassets */,
+				93386776A00CA3AD238C3FDD /* Info.plist */,
+				41B51D26B109EDE913468299 /* TidalWidget.entitlements */,
+			);
+			name = TidalWidget;
+			path = TidalWidget;
 			sourceTree = "<group>";
 		};
 		9740EEB11CF90186004384FC /* Flutter */ = {
@@ -103,6 +192,8 @@
 				97C146EF1CF9000F007C117D /* Products */,
 				331C8082294A63A400263BE5 /* RunnerTests */,
 				B17D0B28A5F9B65457903CA9 /* GoogleService-Info.plist */,
+				879850EDF6DC7C22FE01F123 /* Frameworks */,
+				8981B9DCF38C53E6EC4BA47F /* TidalWidget */,
 			);
 			sourceTree = "<group>";
 		};
@@ -111,6 +202,9 @@
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
+				1E85BAC1B1FA96AB9FFDC0F6 /* TidalWidget.appex */,
+				DD584DBE2A345A4C19CDBD0A /* TidalWidget.appex */,
+				D79EDE52D8D3005CD9759953 /* TidalWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -127,8 +221,17 @@
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				E33A7804A904D5B547D993FE /* Runner.entitlements */,
 			);
 			path = Runner;
+			sourceTree = "<group>";
+		};
+		EE397944F2E96DFB3C2D02D7 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				70919A3D4B603E07FB69A739 /* Foundation.framework */,
+			);
+			name = iOS;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -160,11 +263,13 @@
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
+				600B3B71AC23DD108E1E750B /* Embed Foundation Extensions */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				324377EEB44975EEF54A00C3 /* PBXTargetDependency */,
 			);
 			name = Runner;
 			packageProductDependencies = (
@@ -173,6 +278,23 @@
 			productName = Runner;
 			productReference = 97C146EE1CF9000F007C117D /* Runner.app */;
 			productType = "com.apple.product-type.application";
+		};
+		CA0846C6DC18E204A9AB90F6 /* TidalWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9BE0ABD3B4559B1974687376 /* Build configuration list for PBXNativeTarget "TidalWidget" */;
+			buildPhases = (
+				8274F7EE36E49B0837AD2A12 /* Sources */,
+				48B0E4F65098498B0940D78A /* Frameworks */,
+				E5A1F755AA09503DB4E186A2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TidalWidget;
+			productName = TidalWidget;
+			productReference = D79EDE52D8D3005CD9759953 /* TidalWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -212,6 +334,7 @@
 			targets = (
 				97C146ED1CF9000F007C117D /* Runner */,
 				331C8080294A63A400263BE5 /* RunnerTests */,
+				CA0846C6DC18E204A9AB90F6 /* TidalWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -233,6 +356,14 @@
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
 				D8D7AA70D774836F9C9E2E74 /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E5A1F755AA09503DB4E186A2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				055CA04D0B5F38D8B7D392BD /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,6 +412,19 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8274F7EE36E49B0837AD2A12 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3737181A030FFF3E8271A212 /* OpenLetterIntent.swift in Sources */,
+				42D08A4872E8C8A3E90C1E72 /* CozyTheme.swift in Sources */,
+				B755971FBACCF5E26BC4CE23 /* SharedState.swift in Sources */,
+				4BA478548BCEFA2B16838BF9 /* TidalWidgetBundle.swift in Sources */,
+				04F50A87512F09D22080B8BB /* TidalTimelineProvider.swift in Sources */,
+				0D81C8485CB21116FBACBB01 /* TidalWidgetViews.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		97C146EA1CF9000F007C117D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -294,6 +438,12 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		324377EEB44975EEF54A00C3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = TidalWidget;
+			target = CA0846C6DC18E204A9AB90F6 /* TidalWidget */;
+			targetProxy = 08CE07D117029CF853646717 /* PBXContainerItemProxy */;
+		};
 		331C8086294A63A400263BE5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 97C146ED1CF9000F007C117D /* Runner */;
@@ -321,6 +471,30 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		08C532CDD7CBB5891B131DEF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_ENTITLEMENTS = TidalWidget/TidalWidget.entitlements;
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TidalWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mypeblo.tidal.TidalWidget;
+				PRODUCT_NAME = TidalWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 		249021D3217E4FDB00AE95B9 /* Profile */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -379,6 +553,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
@@ -440,6 +615,56 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner";
 			};
 			name = Profile;
+		};
+		7ABFD24882F0E62615FE57CD /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_ENTITLEMENTS = TidalWidget/TidalWidget.entitlements;
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TidalWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mypeblo.tidal.TidalWidget;
+				PRODUCT_NAME = TidalWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Profile;
+		};
+		8B53C2D088E20788547F97AA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_ENTITLEMENTS = TidalWidget/TidalWidget.entitlements;
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TidalWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mypeblo.tidal.TidalWidget;
+				PRODUCT_NAME = TidalWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
 		};
 		97C147031CF9000F007C117D /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -558,6 +783,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
@@ -580,6 +806,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
@@ -592,6 +819,74 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		A95CCF2E39A35F9EFA626AD9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_ENTITLEMENTS = TidalWidget/TidalWidget.entitlements;
+				CODE_SIGN_IDENTITY = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TidalWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mypeblo.tidal.TidalWidget;
+				PRODUCT_NAME = TidalWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DE108EB181A64E7DC1769985 /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_ENTITLEMENTS = TidalWidget/TidalWidget.entitlements;
+				CODE_SIGN_IDENTITY = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TidalWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mypeblo.tidal.TidalWidget;
+				PRODUCT_NAME = TidalWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Profile;
+		};
+		E2DFBFC8C86BFDBAAA8453A4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_ENTITLEMENTS = TidalWidget/TidalWidget.entitlements;
+				CODE_SIGN_IDENTITY = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TidalWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mypeblo.tidal.TidalWidget;
+				PRODUCT_NAME = TidalWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
@@ -624,6 +919,16 @@
 				97C147061CF9000F007C117D /* Debug */,
 				97C147071CF9000F007C117D /* Release */,
 				249021D4217E4FDB00AE95B9 /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9BE0ABD3B4559B1974687376 /* Build configuration list for PBXNativeTarget "TidalWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8B53C2D088E20788547F97AA /* Release */,
+				08C532CDD7CBB5891B131DEF /* Debug */,
+				7ABFD24882F0E62615FE57CD /* Profile */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
