@@ -35,9 +35,12 @@ service cloud.firestore {
       // lastSeenAt is the clock-offset probe (see services/clock.dart) — it is
       // only ever compared against the device's own clock, so a forged value
       // fools nobody but the forger.
+      // No fcmToken: this app sends no push. The widget stays fresh via
+      // background refresh writing the shared cache, which needs no server,
+      // no credentials, and no billing.
       allow update: if signedIn() && userId == uid()
         && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['displayName','catId','fcmToken','pairId','lastSeenAt'])
+             .hasOnly(['displayName','catId','pairId','lastSeenAt'])
         && (!('pairId' in resource.data)
             || request.resource.data.pairId == resource.data.pairId);
 
