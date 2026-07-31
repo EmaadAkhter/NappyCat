@@ -229,11 +229,7 @@ class _HeroLetterCard extends StatelessWidget {
                   title: 'All quiet',
                   body: payload.idleLine ?? 'Your cat is napping.',
                 ),
-              LetterState.waiting => _Quiet(
-                  title: '$partner left you something',
-                  body: 'Tap to read it. The letter fades 16 hours after you open it.',
-                  accent: CozyColors.softYellow,
-                ),
+              LetterState.waiting => _Waiting(partner: partner, onRead: onTap),
               LetterState.open => _OpenLetter(payload: payload, partner: partner),
               LetterState.faded => _Quiet(
                   title: 'It drifted away',
@@ -247,26 +243,52 @@ class _HeroLetterCard extends StatelessWidget {
   }
 }
 
-class _Quiet extends StatelessWidget {
-  const _Quiet({required this.title, required this.body, this.accent});
+/// A letter has arrived and has NOT been opened. Deliberately gives an explicit
+/// button: relying on "the whole card is tappable" left people prodding the
+/// illustration and wondering why nothing happened.
+class _Waiting extends StatelessWidget {
+  const _Waiting({required this.partner, this.onRead});
 
-  final String title;
-  final String body;
-  final Color? accent;
+  final String partner;
+  final VoidCallback? onRead;
 
   @override
   Widget build(BuildContext context) => Column(
         children: [
-          if (accent != null)
-            Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-              decoration: BoxDecoration(
-                color: accent!.withValues(alpha: 0.85),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Text('✉️ a letter is waiting', style: CozyText.pill),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            decoration: BoxDecoration(
+              color: CozyColors.softYellow.withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(14),
             ),
+            child: Text('a letter is waiting', style: CozyText.pill),
+          ),
+          const SizedBox(height: 10),
+          Text('$partner left you something',
+              textAlign: TextAlign.center,
+              style: CozyText.rounded(22, weight: FontWeight.w700)),
+          const SizedBox(height: 14),
+          CozyButton(
+            title: 'Read it',
+            icon: Icons.mail_outline,
+            onTap: onRead,
+          ),
+          const SizedBox(height: 8),
+          Text('It fades 16 hours after you open it.',
+              textAlign: TextAlign.center, style: CozyText.muted),
+        ],
+      );
+}
+
+class _Quiet extends StatelessWidget {
+  const _Quiet({required this.title, required this.body});
+
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) => Column(
+        children: [
           Text(title,
               textAlign: TextAlign.center,
               style: CozyText.rounded(22, weight: FontWeight.w700)),

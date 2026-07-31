@@ -27,18 +27,28 @@ class _BouncyState extends State<Bouncy> {
     setState(() => _pressed = v);
   }
 
+  // Press feedback comes from Listener, not GestureDetector.
+  //
+  // onTapDown/onTapUp enter the gesture arena and compete with any enclosing
+  // scroll view: drift a pixel and the scroll wins, the tap is cancelled, and
+  // the control only fires if you press and hold perfectly still. That reads as
+  // "you have to hold it", which is exactly the bug this fixes. Listener sees
+  // raw pointer events and never competes, so the visual is immediate while
+  // onTap stays a plain, reliable tap.
   @override
-  Widget build(BuildContext context) => GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTapDown: (_) => _set(true),
-        onTapUp: (_) => _set(false),
-        onTapCancel: () => _set(false),
-        onTap: widget.onTap,
-        child: AnimatedScale(
-          scale: _pressed ? 0.96 : 1.0,
-          duration: const Duration(milliseconds: 150),
-          curve: Curves.easeOutBack,
-          child: widget.child,
+  Widget build(BuildContext context) => Listener(
+        onPointerDown: (_) => _set(true),
+        onPointerUp: (_) => _set(false),
+        onPointerCancel: (_) => _set(false),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: widget.onTap,
+          child: AnimatedScale(
+            scale: _pressed ? 0.96 : 1.0,
+            duration: const Duration(milliseconds: 120),
+            curve: Curves.easeOut,
+            child: widget.child,
+          ),
         ),
       );
 }
