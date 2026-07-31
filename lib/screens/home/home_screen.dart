@@ -22,14 +22,18 @@ class HomeScreen extends StatefulWidget {
     required this.onOpenLetter,
     required this.onCompose,
     required this.onChangeCat,
+    required this.onOpenJournal,
   });
 
   final CatBreed myBreed;
   final String myName;
   final WidgetPayload payload;
-  final VoidCallback onOpenLetter;
+
+  /// Null when there is nothing unopened to read.
+  final VoidCallback? onOpenLetter;
   final VoidCallback onCompose;
   final VoidCallback onChangeCat;
+  final VoidCallback onOpenJournal;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -110,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     state: state,
                     payload: p,
                     partner: partner,
-                    onTap: state == LetterState.waiting || state == LetterState.open
+                    onTap: state == LetterState.waiting
                         ? widget.onOpenLetter
                         : null,
                   ),
@@ -128,21 +132,24 @@ class _HomeScreenState extends State<HomeScreen> {
                         : null,
                   ),
                   const SizedBox(height: 12),
-                  Bouncy(
-                    onTap: widget.onChangeCat,
-                    child: DashedCard(
-                      padding: 12,
-                      strokeColor: CozyColors.softLavender,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.autorenew,
-                              size: 16, color: CozyColors.textSecondary),
-                          const SizedBox(width: 8),
-                          Text('Change my cat', style: CozyText.caption),
-                        ],
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _SmallAction(
+                          icon: Icons.menu_book,
+                          label: 'Still here',
+                          onTap: widget.onOpenJournal,
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _SmallAction(
+                          icon: Icons.autorenew,
+                          label: 'Change my cat',
+                          onTap: widget.onChangeCat,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -152,6 +159,40 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+class _SmallAction extends StatelessWidget {
+  const _SmallAction({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Bouncy(
+        onTap: onTap,
+        child: DashedCard(
+          padding: 12,
+          strokeColor: CozyColors.softLavender,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: CozyColors.textSecondary),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: CozyText.caption),
+              ),
+            ],
+          ),
+        ),
+      );
 }
 
 /// The four-state hero. Mirrors exactly what the home-screen widget renders, so

@@ -34,9 +34,12 @@ service cloud.firestore {
         && request.resource.data.catId is string;
 
       // (A) profile / token / pairing writes. May NEVER touch lastSentAt.
+      // lastSeenAt is the clock-offset probe (see services/clock.dart) — it is
+      // only ever compared against the device's own clock, so a forged value
+      // fools nobody but the forger.
       allow update: if signedIn() && userId == uid()
         && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['displayName','catId','fcmToken','pairId'])
+             .hasOnly(['displayName','catId','fcmToken','pairId','lastSeenAt'])
         && (!('pairId' in resource.data)
             || request.resource.data.pairId == resource.data.pairId);
 

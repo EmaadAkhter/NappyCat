@@ -1,0 +1,13 @@
+{
+  "_comment": "Emulator/dev config. Same as firebase.json but loads the short-duration rules so the app's dev timings (2 min) are accepted. Use: firebase emulators:start --config firebase.dev.json",
+  "firestore": {
+    "rules": "firestore.dev.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "emulators": {
+    "firestore": { "port": 8089 },
+    "auth": { "port": 9099 },
+    "ui": { "enabled": true, "port": 4000 },
+    "singleProjectMode": true
+  }
+}
