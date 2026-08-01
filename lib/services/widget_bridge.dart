@@ -18,7 +18,13 @@ class WidgetBridge {
   /// fails silently — the widget just never updates — so it is defined once here
   /// and referenced everywhere.
   static const iOSWidgetName = 'TidalWidget';
-  static const androidWidgetName = 'TidalWidgetProvider';
+
+  /// FULLY QUALIFIED, because home_widget resolves the bare androidName as
+  /// `<applicationId>.<name>` and our provider lives in the `.widget`
+  /// subpackage. The bare name threw ClassNotFoundException on every update —
+  /// silently — and the widget never refreshed after the app published.
+  static const androidWidgetQualifiedName =
+      'com.mypeblo.tidal.widget.TidalWidgetProvider';
 
   /// home_widget requires the App Group to be set before EVERY save on iOS, not
   /// once at startup. Forgetting it writes to the app's own container, which the
@@ -35,7 +41,7 @@ class WidgetBridge {
       );
       await HomeWidget.updateWidget(
         iOSName: iOSWidgetName,
-        androidName: androidWidgetName,
+        qualifiedAndroidName: androidWidgetQualifiedName,
       );
     } catch (_) {
       // The widget is a nicety, never a dependency. It legitimately fails when
@@ -73,6 +79,22 @@ class WidgetBridge {
   static Future<void> clearPendingOpen() async {
     await _prepare();
     await HomeWidget.saveWidgetData<String>(pendingOpenKey, '');
+  }
+}
+
+/// The one-time widget-guide flag rides in the same shared prefs — no extra
+/// dependency, works on both platforms.
+class GuideFlag {
+  static const _key = 'tidal_guide_shown';
+
+  static Future<bool> wasShown() async {
+    await HomeWidget.setAppGroupId(WidgetBridge.appGroupId);
+    return (await HomeWidget.getWidgetData<String>(_key)) == '1';
+  }
+
+  static Future<void> markShown() async {
+    await HomeWidget.setAppGroupId(WidgetBridge.appGroupId);
+    await HomeWidget.saveWidgetData<String>(_key, '1');
   }
 }
 

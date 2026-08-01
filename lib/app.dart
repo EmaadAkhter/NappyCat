@@ -65,6 +65,7 @@ class _RootState extends State<_Root> {
   Future<void> _boot() async {
     try {
       final user = await services.auth.signIn();
+      _showedGuide = await GuideFlag.wasShown();
       await services.clock.sync(user.uid);
       if (mounted) setState(() => _uid = user.uid);
     } catch (e) {
@@ -131,11 +132,18 @@ class _RootState extends State<_Root> {
             if (!_showedGuide) {
               return WidgetGuideScreen(
                 breed: CatBreed.fromId(me.catId),
-                onFinish: () => setState(() => _showedGuide = true),
+                onFinish: () {
+                  // Persisted: this screen is a one-time tour, not a toll booth
+                  // on every launch.
+                  GuideFlag.markShown();
+                  setState(() => _showedGuide = true);
+                },
               );
             }
 
-            return _Home(me: me);
+            final partnerId =
+                pairSnap.data!.firstWhere((m) => m != _uid, orElse: () => '');
+            return _Home(me: me, partnerId: partnerId);
           },
         );
       },
@@ -147,9 +155,10 @@ class _RootState extends State<_Root> {
 /// [WidgetPayload] the native widgets will read — so the in-app hero card and
 /// the home-screen widget can never disagree about what the cat is doing.
 class _Home extends StatefulWidget {
-  const _Home({required this.me});
+  const _Home({required this.me, required this.partnerId});
 
   final AppUser me;
+  final String partnerId;
 
   @override
   State<_Home> createState() => _HomeState();
@@ -213,66 +222,127 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
     WidgetBridge.publish(payload);
   }
 
+  /// Set the instant the user taps Read, before the server write lands. The
+  /// stream catches up within a second or two, but without this the tap
+  /// produced no visible change until then — which read as "the button doesn't
+  /// work unless you hold it".
+  TidalMessage? _justOpened;
+  DateTime? _justOpenedAt;
+
   @override
   Widget build(BuildContext context) {
     final pairId = me.pairId!;
 
-    return StreamBuilder<TidalMessage?>(
-      stream: services.messages.inbox(pairId: pairId, myId: me.uid),
-      builder: (context, waitingSnap) {
+    return StreamBuilder<AppUser?>(
+      // The partner's real profile. Before this, their name and cat were known
+      // only from letter denormalization — so with no letter in flight the app
+      // fell back to the grey tabby, every time, no matter what anyone chose.
+      stream: widget.partnerId.isEmpty
+          ? const Stream.empty()
+          : services.auth.watch(widget.partnerId),
+      builder: (context, partnerSnap) {
+        final partner = partnerSnap.data;
+
         return StreamBuilder<TidalMessage?>(
-          stream: services.messages.currentlyOpen(pairId: pairId, myId: me.uid),
-          builder: (context, openSnap) {
-            final waiting = waitingSnap.data;
-            final open = openSnap.data;
-            final letter = open ?? waiting;
+          stream: services.messages.inbox(pairId: pairId, myId: me.uid),
+          builder: (context, waitingSnap) {
+            return StreamBuilder<TidalMessage?>(
+              stream:
+                  services.messages.currentlyOpen(pairId: pairId, myId: me.uid),
+              builder: (context, openSnap) {
+                final waiting = waitingSnap.data;
+                var open = openSnap.data;
 
-            final payload = WidgetPayload(
-              state: open != null
-                  ? LetterState.open
-                  : waiting != null
-                      ? LetterState.waiting
-                      : LetterState.empty,
-              messageId: letter?.id,
-              text: letter?.text,
-              openedAt: open?.openedAt,
-              expiresAt: open?.expiresAt,
-              partnerName: letter?.senderName,
-              partnerCatId: letter?.senderCatId,
-              idleLine: _idleLine,
-              canSendAt: me.lastSentAt?.add(Config.sendCooldown),
-            );
+                // Optimistic open: trust the local tap until the server
+                // catches up, then drop it.
+                if (open != null && open.id == _justOpened?.id) {
+                  _justOpened = null;
+                  _justOpenedAt = null;
+                }
+                final justOpened = _justOpened;
+                if (open == null && justOpened != null) {
+                  open = TidalMessage(
+                    id: justOpened.id,
+                    senderId: justOpened.senderId,
+                    recipientId: justOpened.recipientId,
+                    text: justOpened.text,
+                    sentAt: justOpened.sentAt,
+                    openedAt: _justOpenedAt,
+                    expiresAt: _justOpenedAt!.add(Config.openTtl),
+                    senderCatId: justOpened.senderCatId,
+                    senderName: justOpened.senderName,
+                  );
+                }
 
-            // One derivation, one writer — the widget and this screen render
-            // from the identical payload, so they cannot disagree.
-            _publish(payload);
+                final letter = open ??
+                    (waiting?.id == justOpened?.id ? null : waiting);
 
-            return HomeScreen(
-              myBreed: CatBreed.fromId(me.catId),
-              myName: me.displayName,
-              payload: payload,
-              onChangeCat: () => _changeCat(context),
-              onOpenJournal: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => JournalScreen(
-                    messages: services.messages.thread(pairId: pairId),
-                    myId: me.uid,
-                    myBreed: CatBreed.fromId(me.catId),
-                    now: services.clock.now,
+                // A stream error must never masquerade as an empty state:
+                // that is exactly how the missing currentlyOpen index read as
+                // "the letter vanished" while the server had accepted the open.
+                if (openSnap.hasError) {
+                  debugPrint('currentlyOpen stream error: ${openSnap.error}');
+                }
+                if (waitingSnap.hasError) {
+                  debugPrint('inbox stream error: ${waitingSnap.error}');
+                }
+                final payload = WidgetPayload(
+                  state: open != null
+                      ? LetterState.open
+                      : letter != null
+                          ? LetterState.waiting
+                          : LetterState.empty,
+                  messageId: (open ?? letter)?.id,
+                  text: (open ?? letter)?.text,
+                  openedAt: open?.openedAt,
+                  expiresAt: open?.expiresAt,
+                  partnerName:
+                      partner?.displayName ?? (open ?? letter)?.senderName,
+                  partnerCatId:
+                      partner?.catId ?? (open ?? letter)?.senderCatId,
+                  idleLine: _idleLine,
+                  canSendAt: me.lastSentAt?.add(Config.sendCooldown),
+                );
+
+                // One derivation, one writer — the widget and this screen
+                // render from the identical payload, so they cannot disagree.
+                _publish(payload);
+
+                return HomeScreen(
+                  myBreed: CatBreed.fromId(me.catId),
+                  myName: me.displayName,
+                  payload: payload,
+                  onChangeCat: () => _changeCat(context),
+                  onOpenJournal: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => JournalScreen(
+                        messages: services.messages.thread(pairId: pairId),
+                        myId: me.uid,
+                        myBreed: CatBreed.fromId(me.catId),
+                        now: services.clock.now,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              onCompose: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => ComposeScreen(
-                    partnerName: payload.partnerName ?? 'them',
-                    canSendAt: payload.canSendAt,
-                    onSend: (text) => _send(pairId, text),
+                  onCompose: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ComposeScreen(
+                        partnerName: payload.partnerName ?? 'them',
+                        canSendAt: payload.canSendAt,
+                        onSend: (text) => _send(pairId, text),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              onOpenLetter:
-                  waiting == null ? null : () => _open(pairId, waiting),
+                  onOpenLetter: waiting == null || open != null
+                      ? null
+                      : () {
+                          setState(() {
+                            _justOpened = waiting;
+                            _justOpenedAt = services.clock.now();
+                          });
+                          _open(pairId, waiting);
+                        },
+                );
+              },
             );
           },
         );

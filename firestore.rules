@@ -20,7 +20,12 @@ service cloud.firestore {
     function uid()      { return request.auth.uid; }
 
     match /users/{userId} {
-      allow read: if signedIn() && userId == uid();
+      // get is open to any signed-in user: the home screen and widget need the
+      // PARTNER's name and cat, and uids are 28-char unguessable strings. The
+      // profile holds nothing beyond displayName/catId. list stays forbidden,
+      // so profiles cannot be enumerated.
+      allow get: if signedIn();
+      allow list: if false;
 
       allow create: if signedIn() && userId == uid()
         && request.resource.data.keys().hasOnly(['displayName','catId','createdAt'])

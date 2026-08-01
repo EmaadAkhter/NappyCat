@@ -63,9 +63,15 @@ void main() {
     expect(snap.data()!['catId'], 'koala');
   });
 
-  testWidgets('the deployed rules still reject reading someone else', (_) async {
+  testWidgets('profiles are gettable by id but never listable', (_) async {
+    // Partner rendering needs the get; enumeration must stay impossible.
+    final other = await db
+        .collection('users')
+        .doc('nonexistent-uid')
+        .get(const GetOptions(source: Source.server));
+    expect(other.exists, isFalse);
     await expectLater(
-      db.collection('users').doc('not-me').get(const GetOptions(source: Source.server)),
+      db.collection('users').get(const GetOptions(source: Source.server)),
       throwsA(isA<FirebaseException>()),
       reason: 'a live misconfiguration would show up here first',
     );

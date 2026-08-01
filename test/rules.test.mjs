@@ -244,8 +244,11 @@ describe('pair access', () => {
     await assertFails(getDocs(collection(carol, 'pairs')));
   });
 
-  it('DENIES reading another user profile', async () => {
-    await assertFails(getDoc(doc(carol, 'users', 'alice')));
+  it('allows reading a profile by id but never listing them', async () => {
+    // The partner's name and cat render on the home screen and widget, so a
+    // signed-in get by uid is allowed; enumeration stays impossible.
+    await assertSucceeds(getDoc(doc(carol, 'users', 'alice')));
+    await assertFails(getDocs(collection(carol, 'users')));
   });
 });
 
