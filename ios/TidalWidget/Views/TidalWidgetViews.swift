@@ -74,8 +74,16 @@ struct SmallView: View {
             cat(entry, size: 96)
 
             switch entry.resolved {
-            case .open, .waiting:
-                // The letter itself, comic-style, right on the home screen.
+            case .waiting:
+                Text("✉️ a new letter — tap to read")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundColor(CozyTheme.textPrimary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                Text("— \(partner(entry))")
+                    .font(.system(size: 8, weight: .medium, design: .rounded))
+                    .foregroundColor(CozyTheme.textMuted)
+            case .open:
                 Text(entry.state.text ?? "")
                     .font(.system(size: 10, weight: .semibold, design: .rounded))
                     .foregroundColor(CozyTheme.textPrimary)
@@ -125,7 +133,10 @@ struct MediumView: View {
                 }
 
                 switch entry.resolved {
-                case .open, .waiting:
+                case .waiting:
+                    bubble("✉️ a new letter — tap to read", size: 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                case .open:
                     bubble(entry.state.text ?? "", size: 12)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 case .faded:

@@ -68,9 +68,14 @@ class WidgetPayload {
   bool hasExpiredAt(DateTime now) =>
       expiresAt != null && !now.isBefore(expiresAt!);
 
-  /// The state to actually render, after applying client-side expiry.
+  /// The state to actually render. For `open`, [expiresAt] is the READING
+  /// window (openedAt + a few minutes), not the letter's 16h life — once it
+  /// passes the cat simply goes back to sleep; the letter itself stays in the
+  /// journal until its real expiry.
   LetterState effectiveState(DateTime now) =>
-      state == LetterState.open && hasExpiredAt(now) ? LetterState.faded : state;
+      state == LetterState.open && hasExpiredAt(now)
+          ? LetterState.empty
+          : state;
 
   static int? _ms(DateTime? d) => d?.millisecondsSinceEpoch;
   static DateTime? _at(dynamic ms) => ms == null || ms == 0

@@ -32,9 +32,10 @@ struct TidalTimelineProvider: TimelineProvider {
         var entries = [TidalEntry(date: now, state: s, resolved: resolved)]
         var policy: TimelineReloadPolicy = .never
 
-        // Only an open letter has a scheduled future transition.
+        // An open letter has exactly one scheduled transition: back to sleep
+        // when the reading window ends, with no refresh budget spent.
         if resolved == .open, let expires = s.expiresAt, expires > now {
-            entries.append(TidalEntry(date: expires, state: s, resolved: .faded))
+            entries.append(TidalEntry(date: expires, state: s, resolved: .empty))
             policy = .after(expires)
         }
 

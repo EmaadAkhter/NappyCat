@@ -85,7 +85,8 @@ void main() {
     expect(stale.effectiveState(openedAt), LetterState.open);
     expect(
       stale.effectiveState(openedAt.add(const Duration(hours: 1))),
-      LetterState.faded,
+      LetterState.empty,
+      reason: 'past the reading window the cat just goes back to sleep',
     );
   });
 

@@ -67,15 +67,16 @@ class TidalWidgetProvider : HomeWidgetProvider() {
     private fun title(s: TidalState, resolved: LetterState): String {
         val who = s.partnerName ?: "Someone"
         return when (resolved) {
-            LetterState.OPEN, LetterState.WAITING -> "— $who · tap to read"
+            LetterState.WAITING, LetterState.OPEN -> "— $who"
             LetterState.FADED, LetterState.EMPTY -> ""
         }
     }
 
     /** What the cat is saying inside the bubble. */
     private fun body(s: TidalState, resolved: LetterState): String = when (resolved) {
-        // The letter itself, comic-style, straight on the home screen.
-        LetterState.OPEN, LetterState.WAITING -> s.text.orEmpty()
+        // The teaser never shows the words — the tap is what starts the clock.
+        LetterState.WAITING -> "✉️ a new letter — tap to read"
+        LetterState.OPEN -> s.text.orEmpty()
         LetterState.FADED -> "it drifted away…"
         LetterState.EMPTY -> s.idleLine ?: "zzz…"
     }

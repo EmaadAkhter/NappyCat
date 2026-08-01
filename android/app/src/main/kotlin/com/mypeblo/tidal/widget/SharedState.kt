@@ -39,7 +39,7 @@ data class TidalState(
      * for hours — so expiry is always recomputed rather than trusted.
      */
     fun effectiveState(now: Long = System.currentTimeMillis()): LetterState =
-        if (state == LetterState.OPEN && expiresAtMs in 1..now) LetterState.FADED else state
+        if (state == LetterState.OPEN && expiresAtMs in 1..now) LetterState.EMPTY else state
 }
 
 object SharedState {
@@ -69,11 +69,12 @@ object SharedState {
     }
 
     /**
-     * Local acknowledgement of a tap: the letter will be read in the app, so
-     * the widget's cat goes straight back to sleep, and a breadcrumb tells
-     * Flutter which letter to open and show.
+     * Reveal in place: flip the cached state to `open` so the letter shows on
+     * the widget immediately, give it a short reading window, and leave a
+     * breadcrumb so Flutter flushes the real open to Firestore next time the
+     * app runs. No app launch — reading happens right here.
      */
-    fun markTappedLocally(context: Context) {
+    fun markOpenedLocally(context: Context, readingWindowMs: Long) {
         val p = prefs(context)
         val raw = p.getString(STATE_KEY, null) ?: return
         try {
@@ -82,7 +83,9 @@ object SharedState {
             val messageId = j.optStringOrNull("messageId") ?: return
 
             val now = System.currentTimeMillis()
-            j.put("state", "empty")
+            j.put("state", "open")
+            j.put("openedAtMs", now)
+            j.put("expiresAtMs", now + readingWindowMs)
 
             p.edit()
                 .putString(STATE_KEY, j.toString())

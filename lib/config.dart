@@ -21,6 +21,12 @@ class Config {
   static Duration get sendCooldown =>
       isDev ? const Duration(minutes: 2) : const Duration(hours: 8);
 
+  /// How long the cat stays awake showing an opened letter before going back
+  /// to sleep. The letter itself stays readable in the journal until its real
+  /// 16h expiry — this only governs the awake display.
+  static Duration get readingWindow =>
+      isDev ? const Duration(seconds: 60) : const Duration(minutes: 10);
+
   /// Sentinel lifetime for a letter that is never opened. Exists only so the
   /// TTL field is never null (Firestore allows one TTL field per collection
   /// group, and a null one would leave abandoned docs immortal).

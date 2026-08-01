@@ -9,7 +9,6 @@ import 'models/widget_payload.dart';
 import 'screens/compose/compose_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/journal/journal_screen.dart';
-import 'screens/letter/letter_screen.dart';
 import 'screens/onboarding/cat_naming_screen.dart';
 import 'screens/onboarding/cat_selection_screen.dart';
 import 'screens/onboarding/widget_guide_screen.dart';
@@ -176,6 +175,11 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
   /// would make every payload look different and defeat the dedup above.
   final String _idleLine = IdleChatter.random();
 
+  /// Set the instant the user taps the waiting letter, before the server write
+  /// lands — the reveal must be immediate, not stream-paced.
+  TidalMessage? _justOpened;
+  DateTime? _justOpenedAt;
+
   @override
   void initState() {
     super.initState();
@@ -211,27 +215,9 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
         openedAt: pending.tappedAt,
       );
     } catch (_) {
-      // Already opened, or already gone; showing it is still correct if it is
-      // within its window, and LetterScreen renders the gone case gently.
+      // Already opened, or already gone — the stream is the source of truth.
+      // No navigation: the reading already happened on the widget itself.
     }
-
-    if (!mounted) return;
-    final snap = await services.db
-        .doc('pairs/${me.pairId}/messages/${pending.messageId}')
-        .get();
-    if (!mounted || !snap.exists) return;
-    final letter = TidalMessage.fromDoc(snap);
-    if (!letter.isVisibleAt(services.clock.now())) return;
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => LetterScreen(
-          letter: letter,
-          openedAt: letter.openedAt ?? pending.tappedAt,
-          now: services.clock.now,
-        ),
-      ),
-    );
   }
 
   void _publish(WidgetPayload payload) {
@@ -259,66 +245,112 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
             if (waitingSnap.hasError) {
               debugPrint('inbox stream error: ${waitingSnap.error}');
             }
-            final waiting = waitingSnap.data;
+            return StreamBuilder<TidalMessage?>(
+              stream:
+                  services.messages.currentlyOpen(pairId: pairId, myId: me.uid),
+              builder: (context, openSnap) {
+                if (openSnap.hasError) {
+                  debugPrint('currentlyOpen stream error: ${openSnap.error}');
+                }
+                final now = services.clock.now();
+                final waiting = waitingSnap.data;
+                var open = openSnap.data;
 
-            // The cat is awake exactly while an UNREAD letter waits. Reading
-            // happens on its own screen; once opened the cat goes back to
-            // sleep and the letter rests in the journal until it fades.
-            final payload = WidgetPayload(
-              state:
-                  waiting != null ? LetterState.waiting : LetterState.empty,
-              messageId: waiting?.id,
-              text: waiting?.text,
-              partnerName: partner?.displayName ?? waiting?.senderName,
-              partnerCatId: partner?.catId ?? waiting?.senderCatId,
-              idleLine: _idleLine,
-              canSendAt: me.lastSentAt?.add(Config.sendCooldown),
-            );
+                // Optimistic reveal: trust the local tap until the server
+                // catches up, then drop it.
+                if (open != null && open.id == _justOpened?.id) {
+                  _justOpened = null;
+                  _justOpenedAt = null;
+                }
+                if (open == null && _justOpened != null) {
+                  open = TidalMessage(
+                    id: _justOpened!.id,
+                    senderId: _justOpened!.senderId,
+                    recipientId: _justOpened!.recipientId,
+                    text: _justOpened!.text,
+                    sentAt: _justOpened!.sentAt,
+                    openedAt: _justOpenedAt,
+                    expiresAt: _justOpenedAt!.add(Config.openTtl),
+                    senderCatId: _justOpened!.senderCatId,
+                    senderName: _justOpened!.senderName,
+                  );
+                }
 
-            // One derivation, one writer — the widget and this screen render
-            // from the identical payload, so they cannot disagree.
-            _publish(payload);
+                // The cat shows an opened letter only for the short reading
+                // window, then sleeps; the letter itself lives on in the
+                // journal until its real 16h expiry.
+                final openedAt = open?.openedAt;
+                final reading = open != null &&
+                    openedAt != null &&
+                    now.isBefore(openedAt.add(Config.readingWindow));
 
-            return HomeScreen(
-              myBreed: CatBreed.fromId(me.catId),
-              myName: me.displayName,
-              payload: payload,
-              onEditName: () => _editName(context),
-              onChangeCat: () => _changeCat(context),
-              onOpenJournal: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => JournalScreen(
-                    messages: services.messages.thread(pairId: pairId),
-                    myId: me.uid,
-                    myBreed: CatBreed.fromId(me.catId),
-                    now: services.clock.now,
+                final unread =
+                    waiting != null && waiting.id != _justOpened?.id;
+
+                final letter = reading ? open : (unread ? waiting : null);
+
+                final payload = WidgetPayload(
+                  state: reading
+                      ? LetterState.open
+                      : unread
+                          ? LetterState.waiting
+                          : LetterState.empty,
+                  messageId: letter?.id,
+                  text: letter?.text,
+                  openedAt: openedAt,
+                  // The display window, NOT the letter's life: when it lapses
+                  // the cat goes back to sleep everywhere.
+                  expiresAt: reading
+                      ? openedAt.add(Config.readingWindow)
+                      : null,
+                  partnerName: partner?.displayName ?? letter?.senderName,
+                  partnerCatId: partner?.catId ?? letter?.senderCatId,
+                  idleLine: _idleLine,
+                  canSendAt: me.lastSentAt?.add(Config.sendCooldown),
+                );
+
+                // One derivation, one writer — the widget and this screen
+                // render from the identical payload, so they cannot disagree.
+                _publish(payload);
+
+                return HomeScreen(
+                  myBreed: CatBreed.fromId(me.catId),
+                  myName: me.displayName,
+                  payload: payload,
+                  onEditName: () => _editName(context),
+                  onChangeCat: () => _changeCat(context),
+                  onOpenJournal: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => JournalScreen(
+                        messages: services.messages.thread(pairId: pairId),
+                        myId: me.uid,
+                        myBreed: CatBreed.fromId(me.catId),
+                        now: services.clock.now,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              onCompose: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => ComposeScreen(
-                    partnerName: payload.partnerName ?? 'them',
-                    canSendAt: payload.canSendAt,
-                    onSend: (text) => _send(pairId, text),
+                  onCompose: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ComposeScreen(
+                        partnerName: payload.partnerName ?? 'them',
+                        canSendAt: payload.canSendAt,
+                        onSend: (text) => _send(pairId, text),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              onOpenLetter: waiting == null
-                  ? null
-                  : () {
-                      final openedAt = services.clock.now();
-                      _open(pairId, waiting);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => LetterScreen(
-                            letter: waiting,
-                            openedAt: openedAt,
-                            now: services.clock.now,
-                          ),
-                        ),
-                      );
-                    },
+                  // Tap reveals IN PLACE: the bubble flips from teaser to the
+                  // letter right here (and on the widget via the publish).
+                  onOpenLetter: !unread
+                      ? null
+                      : () {
+                          setState(() {
+                            _justOpened = waiting;
+                            _justOpenedAt = services.clock.now();
+                          });
+                          _open(pairId, waiting);
+                        },
+                );
+              },
             );
           },
         );

@@ -1,20 +1,15 @@
 import AppIntents
 import WidgetKit
 
-/// Fired by tapping the widget. Salvaged shape from WakeCatIntent: write the
-/// App Group, reload the timeline.
-///
-/// It never touches Firestore — no auth, no SDK in an extension. It flips the
-/// local cache so the cat wakes instantly, drops a breadcrumb, and opens the
-/// app, which is what actually reaches the server. See WidgetBridge
-/// .reconcilePendingOpen on the Dart side.
+/// Tap on the widget = read the letter RIGHT THERE. The app is deliberately
+/// not launched; the reveal happens on the widget and Flutter flushes the real
+/// open to Firestore next time it runs.
 struct OpenLetterIntent: AppIntent {
     static var title: LocalizedStringResource = "Read the letter"
-    static var description = IntentDescription("Wakes the cat and opens your letter.")
+    static var description = IntentDescription("Reveals the letter on the widget.")
 
-    /// The tap IS the app opening, which is what makes the "user only ever taps
-    /// the widget" case impossible.
-    static var openAppWhenRun: Bool = true
+    /// Reading happens on the home screen — do not drag the user into the app.
+    static var openAppWhenRun: Bool = false
 
     init() {}
 
@@ -22,7 +17,9 @@ struct OpenLetterIntent: AppIntent {
         let s = SharedStore.load()
 
         if s.effectiveState() == .waiting {
-            SharedStore.markTappedLocally()
+            // The app republishes the authoritative window when it next runs,
+            // so a dev/prod mismatch self-corrects.
+            SharedStore.markOpenedLocally(readingWindow: 10 * 60)
         }
 
         SharedStore.reload()

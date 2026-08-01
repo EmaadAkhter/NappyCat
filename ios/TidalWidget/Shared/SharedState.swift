@@ -27,7 +27,7 @@ struct TidalState {
     /// Client-side expiry. The cached blob can outlive its own window, so never
     /// trust `state` alone.
     func effectiveState(now: Date = Date()) -> LetterState {
-        if state == .open, let e = expiresAt, now >= e { return .faded }
+        if state == .open, let e = expiresAt, now >= e { return .empty }
         return state
     }
 }
@@ -63,10 +63,11 @@ enum SharedStore {
         )
     }
 
-    /// Local acknowledgement of a tap: the letter will be read in the app, so
-    /// the widget's cat goes straight back to sleep, and the breadcrumb tells
-    /// Flutter which letter to open and show.
-    static func markTappedLocally() {
+    /// Reveal in place: flip the cached state to `open` so the letter shows on
+    /// the widget immediately, give it a short reading window, and leave the
+    /// breadcrumb so Flutter flushes the real open to Firestore next time the
+    /// app runs.
+    static func markOpenedLocally(readingWindow: TimeInterval) {
         guard let d = defaults,
               let raw = d.string(forKey: stateKey),
               let data = raw.data(using: .utf8),
@@ -76,7 +77,9 @@ enum SharedStore {
         else { return }
 
         let nowMs = Date().timeIntervalSince1970 * 1000
-        j["state"] = LetterState.empty.rawValue
+        j["state"] = LetterState.open.rawValue
+        j["openedAtMs"] = nowMs
+        j["expiresAtMs"] = nowMs + readingWindow * 1000
 
         if let out = try? JSONSerialization.data(withJSONObject: j),
            let s = String(data: out, encoding: .utf8) {

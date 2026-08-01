@@ -203,8 +203,10 @@ class _SmallAction extends StatelessWidget {
       );
 }
 
-/// The four-state hero. Mirrors exactly what the home-screen widget renders, so
-/// this doubles as the fast iteration loop for widget layout.
+/// The four-state hero, comic-vertical: bubble on top with its tail pointing
+/// down at the cat below. The teaser never shows the words — tapping reveals
+/// the letter in place, which is what starts its 16h clock. Mirrors the widget
+/// exactly.
 class _HeroLetterCard extends StatelessWidget {
   const _HeroLetterCard({
     required this.state,
@@ -218,123 +220,48 @@ class _HeroLetterCard extends StatelessWidget {
   final String partner;
   final VoidCallback? onTap;
 
+  String get _line => switch (state) {
+        LetterState.waiting => '✉️ a new letter — tap to read',
+        LetterState.open => payload.text ?? '',
+        LetterState.faded => 'it drifted away…',
+        LetterState.empty => payload.idleLine ?? 'zzz…',
+      };
+
   @override
   Widget build(BuildContext context) {
     final breed = payload.partnerBreed;
-    // Awake = an unread letter is waiting. Reading happens on its own screen,
-    // and once it is closed the cat sleeps again.
+    // Awake while an unread letter waits and for the short reading window
+    // after it is revealed; asleep once read.
     final awake = state == LetterState.waiting || state == LetterState.open;
 
     return Bouncy(
-      onTap: onTap,
+      onTap: state == LetterState.waiting ? onTap : null,
       child: CozyCard(
-        padding: 24,
+        padding: 20,
         radius: 32,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            CatIllustration(breed: breed, awake: awake, size: 180),
-            const SizedBox(height: 12),
-            switch (state) {
-              LetterState.empty => _Quiet(
-                  title: 'All quiet',
-                  body: payload.idleLine ?? 'Your cat is napping.',
-                ),
-              LetterState.waiting =>
-                _Waiting(partner: partner, payload: payload, onRead: onTap),
-              LetterState.open => _OpenLetter(payload: payload, partner: partner),
-              LetterState.faded => _Quiet(
-                  title: 'It drifted away',
-                  body: 'That letter has faded. Write back when you\'re ready.',
-                ),
-            },
+            SpeechBubble(
+              tail: BubbleTail.down,
+              child: Text(
+                _line,
+                textAlign: TextAlign.center,
+                style: CozyText.rounded(16, weight: FontWeight.w600)
+                    .copyWith(height: 1.4),
+              ),
+            ),
+            if (state == LetterState.waiting || state == LetterState.open) ...[
+              const SizedBox(height: 2),
+              Text('— $partner',
+                  textAlign: TextAlign.center, style: CozyText.muted),
+            ],
+            const SizedBox(height: 6),
+            Center(
+                child: CatIllustration(breed: breed, awake: awake, size: 210)),
           ],
         ),
       ),
-    );
-  }
-}
-
-/// An unread letter: the cat is awake and SPEAKING it, comic-style. Reading it
-/// (the button) files it into the journal and lets the cat sleep again.
-class _Waiting extends StatelessWidget {
-  const _Waiting({required this.partner, required this.payload, this.onRead});
-
-  final String partner;
-  final WidgetPayload payload;
-  final VoidCallback? onRead;
-
-  @override
-  Widget build(BuildContext context) => Column(
-        children: [
-          SpeechBubble(
-            child: Text(
-              payload.text ?? '',
-              textAlign: TextAlign.center,
-              style: CozyText.rounded(16, weight: FontWeight.w600)
-                  .copyWith(height: 1.4),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text('— $partner', style: CozyText.muted),
-          const SizedBox(height: 12),
-          CozyButton(
-            title: 'Read it 🐾',
-            icon: Icons.mail_outline,
-            onTap: onRead,
-          ),
-        ],
-      );
-}
-
-class _Quiet extends StatelessWidget {
-  const _Quiet({required this.title, required this.body});
-
-  final String title;
-  final String body;
-
-  @override
-  Widget build(BuildContext context) => Column(
-        children: [
-          Text(title,
-              textAlign: TextAlign.center,
-              style: CozyText.rounded(22, weight: FontWeight.w700)),
-          const SizedBox(height: 6),
-          Text(body, textAlign: TextAlign.center, style: CozyText.caption),
-        ],
-      );
-}
-
-class _OpenLetter extends StatelessWidget {
-  const _OpenLetter({required this.payload, required this.partner});
-
-  final WidgetPayload payload;
-  final String partner;
-
-  @override
-  Widget build(BuildContext context) {
-    final now = DateTime.now();
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: CozyColors.cardSecondary,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-                color: CozyColors.sageGreen.withValues(alpha: 0.5), width: 1.5),
-          ),
-          child: Text(payload.text ?? '',
-              textAlign: TextAlign.center,
-              style: CozyText.rounded(16, weight: FontWeight.w600)),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          payload.expiresAt == null
-              ? '— $partner'
-              : '— $partner · fades in ${_remaining(payload.expiresAt!, now)}',
-          style: CozyText.muted,
-        ),
-      ],
     );
   }
 }
