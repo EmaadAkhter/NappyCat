@@ -138,7 +138,7 @@ class _CatNamingScreenState extends State<CatNamingScreen> {
                                     setState(() => _showError = false),
                                 decoration: const InputDecoration(
                                   counterText: '',
-                                  hintText: 'What should they call you?',
+                                  hintText: 'Your name',
                                 ),
                                 style: CozyText.rounded(18,
                                     weight: FontWeight.w600),

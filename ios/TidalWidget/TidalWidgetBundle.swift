@@ -16,7 +16,7 @@ struct TidalWidget: Widget {
         StaticConfiguration(kind: kind, provider: TidalTimelineProvider()) { entry in
             TidalWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("Tidal")
+        .configurationDisplayName("NappyCat")
         .description("Their cat sleeps here until a letter arrives. Tap to read it.")
         .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular])
     }

@@ -72,7 +72,15 @@ void main() {
     db.useFirestoreEmulator(Config.emulatorHost, Config.firestoreEmulatorPort);
     await FirebaseAuth.instance
         .useAuthEmulator(Config.emulatorHost, Config.authEmulatorPort);
+    // Ground truth for where the native SDK is actually pointing. If this
+    // prints a googleapis host the emulator redirect silently failed and the
+    // suite would be talking to PRODUCTION.
+    // ignore: avoid_print
+    print('FIRESTORE HOST = ${db.settings.host} ssl=${db.settings.sslEnabled} '
+        'project=${Firebase.app().options.projectId}');
     me = (await FirebaseAuth.instance.signInAnonymously()).user!.uid;
+    // ignore: avoid_print
+    print('AUTH UID = $me');
     auth = AuthService(FirebaseAuth.instance, db);
     pairing = PairingService(db);
   });

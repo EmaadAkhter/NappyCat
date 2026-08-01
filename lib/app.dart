@@ -28,7 +28,7 @@ class TidalApp extends StatelessWidget {
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     return MaterialApp(
-      title: 'Tidal',
+      title: 'NappyCat',
       debugShowCheckedModeBanner: false,
       theme: buildCozyTheme(),
       darkTheme: buildCozyTheme(),
@@ -354,7 +354,7 @@ class _Fatal extends StatelessWidget {
               children: [
                 const Text('🌊', style: TextStyle(fontSize: 40)),
                 const SizedBox(height: 12),
-                Text('Could not reach the tide',
+                Text('Couldn\'t wake the cat',
                     style: CozyText.rounded(20, weight: FontWeight.w700)),
                 const SizedBox(height: 8),
                 Text('$error',

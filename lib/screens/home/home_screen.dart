@@ -359,19 +359,19 @@ class _TideCard extends StatelessWidget {
               color: CozyColors.warmCoral.withValues(alpha: 0.85),
               shape: BoxShape.circle,
             ),
-            child: const Text('🌊', style: TextStyle(fontSize: 20)),
+            child: const Text('🐾', style: TextStyle(fontSize: 20)),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(locked ? 'The tide is out' : 'The tide is in',
+                Text(locked ? 'The cat is napping' : 'The cat is ready',
                     style: CozyText.rounded(16, weight: FontWeight.w700)),
                 Text(
                   locked
                       ? 'You can write again in ${_remaining(canSendAt!, now)}'
-                      : 'You can send a letter now',
+                      : 'It can carry a letter now',
                   style: CozyText.muted,
                 ),
               ],

@@ -96,11 +96,11 @@ class _PairingScreenState extends State<PairingScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Find your person 🌊',
+              Text('Find your person 🐾',
                   style: CozyText.rounded(28, weight: FontWeight.w700)),
               const SizedBox(height: 8),
               Text(
-                'Tidal is for exactly two people. Pair once, then never think about it again.',
+                'NappyCat is for exactly two people. Pair once, then never think about it again.',
                 textAlign: TextAlign.center,
                 style: CozyText.body,
               ),
@@ -149,10 +149,16 @@ class _PairingScreenState extends State<PairingScreen> {
                     style: CozyText.rounded(12,
                         weight: FontWeight.w700, color: CozyColors.textMuted)),
                 const SizedBox(height: 10),
-                SelectableText(
-                  _code!,
-                  style: CozyText.rounded(32, weight: FontWeight.w900)
-                      .copyWith(letterSpacing: 4),
+                // One line always: at 32pt with wide tracking an 8-char code
+                // wraps on narrow phones and reads as two codes.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: SelectableText(
+                    _code!,
+                    maxLines: 1,
+                    style: CozyText.rounded(32, weight: FontWeight.w900)
+                        .copyWith(letterSpacing: 4),
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Text('Send this to them. It expires in 12 hours.',

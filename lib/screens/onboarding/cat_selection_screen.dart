@@ -147,11 +147,15 @@ class _BreedCard extends StatelessWidget {
               Expanded(
                 child: CatIllustration(breed: breed, awake: true, size: 100),
               ),
-              Text(
-                breed.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: CozyText.rounded(16, weight: FontWeight.w700),
+              // Scales down instead of truncating: "Panda/Koala Cat" was
+              // rendering as "Panda/Koal…" on narrow phones.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  breed.label,
+                  maxLines: 1,
+                  style: CozyText.rounded(16, weight: FontWeight.w700),
+                ),
               ),
               const SizedBox(height: 4),
               SizedBox(

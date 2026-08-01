@@ -99,9 +99,9 @@ class _ComposeScreenState extends State<ComposeScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('🌊', style: TextStyle(fontSize: 40)),
+              const Text('😴', style: TextStyle(fontSize: 40)),
               const SizedBox(height: 12),
-              Text('The tide is out',
+              Text('The cat is napping',
                   style: CozyText.rounded(22, weight: FontWeight.w700)),
               const SizedBox(height: 8),
               Text(
@@ -151,7 +151,7 @@ class _ComposeScreenState extends State<ComposeScreen> {
           ],
           const SizedBox(height: 12),
           CozyButton(
-            title: _sending ? 'Sending…' : 'Send it 🌊',
+            title: _sending ? 'Sending…' : 'Send it 🐾',
             icon: Icons.send,
             onTap: _controller.text.trim().isEmpty || _sending ? null : _send,
           ),
