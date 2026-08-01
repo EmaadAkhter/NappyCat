@@ -23,9 +23,10 @@ class Config {
 
   /// How long the cat stays awake showing an opened letter before going back
   /// to sleep. The letter itself stays readable in the journal until its real
-  /// 16h expiry — this only governs the awake display.
-  static Duration get readingWindow =>
-      isDev ? const Duration(seconds: 60) : const Duration(minutes: 10);
+  /// 16h expiry — this only governs the awake display. Ten minutes flat, per
+  /// the owner, in every environment — it also matches the native widgets'
+  /// built-in fallback, so the dev/prod drift disappears.
+  static Duration get readingWindow => const Duration(minutes: 10);
 
   /// Sentinel lifetime for a letter that is never opened. Exists only so the
   /// TTL field is never null (Firestore allows one TTL field per collection

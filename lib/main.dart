@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'app.dart';
 import 'config.dart';
 import 'firebase_options.dart';
+import 'services/background_refresh.dart';
 import 'services/services.dart';
 
 Future<void> main() async {
@@ -25,5 +26,12 @@ Future<void> main() async {
   }
 
   services = Services.create();
+
+  // Phase 4: periodic background sync keeps the widget honest while the app is
+  // closed. Best-effort by design — failures just mean a staler widget.
+  try {
+    await BackgroundRefresh.register();
+  } catch (_) {}
+
   runApp(const TidalApp());
 }
