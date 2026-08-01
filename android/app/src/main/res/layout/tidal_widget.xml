@@ -1,40 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Partner's cat on the left; whatever it has to say in a comic speech bubble
-     on the right. Colours are CozyColors tokens verbatim — RemoteViews cannot
-     read a theme, so they are literal. -->
+<!-- Comic layout: speech bubble on top, tail pointing down, the cat big
+     underneath. Colours are CozyColors tokens verbatim — RemoteViews cannot
+     read a theme. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
+    android:orientation="vertical"
     android:background="@drawable/tidal_widget_bg"
     android:padding="10dp">
 
-    <!-- Sized by the widget's height rather than a fixed dp, so the cat is as
-         big as the cell allows instead of a stamp in the corner. -->
-    <ImageView
-        android:id="@+id/cat"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:maxWidth="110dp"
-        android:adjustViewBounds="true"
-        android:scaleType="fitCenter"
-        android:contentDescription="@string/tidal_widget_description"
-        android:src="@drawable/tabby_asleep" />
-
-    <ImageView
-        android:layout_width="12dp"
-        android:layout_height="16dp"
-        android:layout_marginStart="2dp"
-        android:importantForAccessibility="no"
-        android:src="@drawable/bubble_tail" />
-
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginStart="-1dp"
         android:orientation="vertical"
         android:background="@drawable/bubble"
         android:padding="10dp">
@@ -46,7 +24,7 @@
             android:maxLines="4"
             android:ellipsize="end"
             android:textColor="#4A3525"
-            android:textSize="12sp"
+            android:textSize="13sp"
             android:text="Nothing yet" />
 
         <TextView
@@ -60,4 +38,23 @@
             android:textSize="10sp"
             android:text="" />
     </LinearLayout>
+
+    <ImageView
+        android:layout_width="16dp"
+        android:layout_height="12dp"
+        android:layout_marginStart="34dp"
+        android:layout_marginTop="-1dp"
+        android:importantForAccessibility="no"
+        android:src="@drawable/bubble_tail_down" />
+
+    <!-- Takes all remaining height: the cat is the star. -->
+    <ImageView
+        android:id="@+id/cat"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:contentDescription="@string/tidal_widget_description"
+        android:src="@drawable/tabby_asleep" />
 </LinearLayout>

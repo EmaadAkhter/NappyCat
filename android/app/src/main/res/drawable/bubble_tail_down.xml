@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tail pointing down at the cat below the bubble. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="16dp" android:height="12dp"
+    android:viewportWidth="16" android:viewportHeight="12">
+    <path
+        android:pathData="M1,0 L15,0 L8,12 Z"
+        android:fillColor="#F8F0E5"
+        android:strokeWidth="1.5"
+        android:strokeColor="#80A8C3A8" />
+</vector>
