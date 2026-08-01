@@ -35,9 +35,16 @@ class TidalWidgetProvider : HomeWidgetProvider() {
 
         appWidgetIds.forEach { id ->
             val views = RemoteViews(context.packageName, R.layout.tidal_widget).apply {
+                // Awake means "an unread letter is waiting". Reading happens in
+                // the app, and once the letter is closed the cat sleeps again —
+                // it is a quiet signal, not a 16-hour lamp.
                 setImageViewResource(
                     R.id.cat,
-                    catDrawable(context, s.partnerCatId, awake = resolved == LetterState.OPEN),
+                    catDrawable(
+                        s.partnerCatId,
+                        awake = resolved == LetterState.WAITING ||
+                            resolved == LetterState.OPEN,
+                    ),
                 )
                 setTextViewText(R.id.title, title(s, resolved))
                 setTextViewText(R.id.body, body(s, resolved))
@@ -56,35 +63,41 @@ class TidalWidgetProvider : HomeWidgetProvider() {
         }
     }
 
+    /** The signature line under the bubble. */
     private fun title(s: TidalState, resolved: LetterState): String {
         val who = s.partnerName ?: "Someone"
         return when (resolved) {
-            LetterState.OPEN -> who
-            LetterState.WAITING -> "$who left you something"
-            LetterState.FADED -> "It drifted away"
-            LetterState.EMPTY -> "All quiet"
+            LetterState.OPEN, LetterState.WAITING -> "— $who · tap to read"
+            LetterState.FADED, LetterState.EMPTY -> ""
         }
     }
 
-    /** WAITING must never reveal the body — that is the point of read-time expiry. */
+    /** What the cat is saying inside the bubble. */
     private fun body(s: TidalState, resolved: LetterState): String = when (resolved) {
-        LetterState.OPEN -> s.text.orEmpty()
-        LetterState.WAITING -> "Tap to read it"
-        LetterState.FADED -> "That letter has faded"
-        LetterState.EMPTY -> s.idleLine ?: "Nothing yet"
+        // The letter itself, comic-style, straight on the home screen.
+        LetterState.OPEN, LetterState.WAITING -> s.text.orEmpty()
+        LetterState.FADED -> "it drifted away…"
+        LetterState.EMPTY -> s.idleLine ?: "zzz…"
     }
 
-    private fun catDrawable(context: Context, catId: String?, awake: Boolean): Int {
-        val id = if (catId.isNullOrBlank()) "tabby" else catId
-        val name = "${id}_${if (awake) "awake" else "asleep"}"
-        val res = context.resources.getIdentifier(name, "drawable", context.packageName)
-        return if (res != 0) res else {
-            context.resources.getIdentifier(
-                if (awake) "tabby_awake" else "tabby_asleep",
-                "drawable",
-                context.packageName,
-            )
+    /**
+     * Static map, deliberately not getIdentifier: release resource shrinking
+     * keeps only statically referenced drawables, so the name lookup returned 0
+     * for every cat and the widget rendered an empty square where the cat
+     * belonged. R.drawable references pin all sixteen.
+     */
+    private fun catDrawable(catId: String?, awake: Boolean): Int {
+        val pair = when (catId) {
+            "tuxedo" -> R.drawable.tuxedo_asleep to R.drawable.tuxedo_awake
+            "ginger" -> R.drawable.ginger_asleep to R.drawable.ginger_awake
+            "pumpkin" -> R.drawable.pumpkin_asleep to R.drawable.pumpkin_awake
+            "koala" -> R.drawable.koala_asleep to R.drawable.koala_awake
+            "jester" -> R.drawable.jester_asleep to R.drawable.jester_awake
+            "blueberry" -> R.drawable.blueberry_asleep to R.drawable.blueberry_awake
+            "catear" -> R.drawable.catear_asleep to R.drawable.catear_awake
+            else -> R.drawable.tabby_asleep to R.drawable.tabby_awake
         }
+        return if (awake) pair.second else pair.first
     }
 
     private fun openIntent(context: Context): PendingIntent =

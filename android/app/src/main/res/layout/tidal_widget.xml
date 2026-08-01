@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mirrors the medium iOS family: partner's cat on the left, their name and
-     the letter (or its status) on the right. Colours are the CozyColors tokens
-     verbatim; RemoteViews cannot read them from a theme, so they are literal. -->
+<!-- Partner's cat on the left; whatever it has to say in a comic speech bubble
+     on the right. Colours are CozyColors tokens verbatim — RemoteViews cannot
+     read a theme, so they are literal. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root"
     android:layout_width="match_parent"
@@ -9,44 +9,52 @@
     android:orientation="horizontal"
     android:gravity="center_vertical"
     android:background="@drawable/tidal_widget_bg"
-    android:padding="14dp">
+    android:padding="12dp">
 
     <ImageView
         android:id="@+id/cat"
-        android:layout_width="76dp"
-        android:layout_height="76dp"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
         android:adjustViewBounds="true"
         android:scaleType="fitCenter"
         android:contentDescription="@string/tidal_widget_description"
         android:src="@drawable/tabby_asleep" />
 
+    <ImageView
+        android:layout_width="12dp"
+        android:layout_height="16dp"
+        android:layout_marginStart="2dp"
+        android:importantForAccessibility="no"
+        android:src="@drawable/bubble_tail" />
+
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginStart="12dp"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxLines="2"
-            android:ellipsize="end"
-            android:textColor="#4A3525"
-            android:textStyle="bold"
-            android:textSize="15sp"
-            android:text="All quiet" />
+        android:layout_marginStart="-1dp"
+        android:orientation="vertical"
+        android:background="@drawable/bubble"
+        android:padding="10dp">
 
         <TextView
             android:id="@+id/body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
             android:maxLines="4"
             android:ellipsize="end"
-            android:textColor="#6B5545"
+            android:textColor="#4A3525"
             android:textSize="12sp"
             android:text="Nothing yet" />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="#998475"
+            android:textSize="10sp"
+            android:text="" />
     </LinearLayout>
 </LinearLayout>

@@ -16,21 +16,13 @@ struct OpenLetterIntent: AppIntent {
     /// the widget" case impossible.
     static var openAppWhenRun: Bool = true
 
-    /// Kept in step with Config.openTtl on the Dart side. Flutter owns the real
-    /// constant; this is the optimistic local guess until the app reconciles,
-    /// so a mismatch self-corrects within seconds rather than corrupting state.
-    @Parameter(title: "Open TTL seconds")
-    var ttlSeconds: Double?
-
     init() {}
 
     func perform() async throws -> some IntentResult {
         let s = SharedStore.load()
 
-        // Nothing waiting: wake the cat for an idle line only. No breadcrumb, so
-        // the app has nothing to flush.
         if s.effectiveState() == .waiting {
-            SharedStore.markOpenedLocally(ttl: ttlSeconds ?? 16 * 60 * 60)
+            SharedStore.markTappedLocally()
         }
 
         SharedStore.reload()

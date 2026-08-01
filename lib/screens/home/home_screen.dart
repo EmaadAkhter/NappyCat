@@ -7,6 +7,7 @@ import '../../theme/cozy_text.dart';
 import '../../widgets/bouncy_button.dart';
 import '../../widgets/cat_illustration.dart';
 import '../../widgets/cozy_card.dart';
+import '../../widgets/speech_bubble.dart';
 
 /// Port of HomeDashboardView, reworked around letters instead of quotes.
 ///
@@ -23,6 +24,7 @@ class HomeScreen extends StatefulWidget {
     required this.onCompose,
     required this.onChangeCat,
     required this.onOpenJournal,
+    required this.onEditName,
   });
 
   final CatBreed myBreed;
@@ -34,6 +36,7 @@ class HomeScreen extends StatefulWidget {
   final VoidCallback onCompose;
   final VoidCallback onChangeCat;
   final VoidCallback onOpenJournal;
+  final VoidCallback onEditName;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -76,34 +79,39 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: CozyColors.cardBackground,
-                      shape: BoxShape.circle,
-                      boxShadow: cozyShadow(swiftUiRadius: 4, y: 2),
+              child: Bouncy(
+                onTap: widget.onEditName,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: CozyColors.cardBackground,
+                        shape: BoxShape.circle,
+                        boxShadow: cozyShadow(swiftUiRadius: 4, y: 2),
+                      ),
+                      child: CatIllustration(
+                          breed: widget.myBreed, awake: true, size: 40),
                     ),
-                    child: CatIllustration(
-                        breed: widget.myBreed, awake: true, size: 40),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(_greeting,
-                            style:
-                                CozyText.rounded(22, weight: FontWeight.w700)),
-                        Text('You are ${widget.myName} to them 💕',
-                            style: CozyText.rounded(13,
-                                color: CozyColors.textSecondary)),
-                      ],
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(_greeting,
+                              style: CozyText.rounded(22,
+                                  weight: FontWeight.w700)),
+                          Text('You are ${widget.myName} to them · tap to edit',
+                              style: CozyText.rounded(13,
+                                  color: CozyColors.textSecondary)),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                    const Icon(Icons.edit_outlined,
+                        size: 16, color: CozyColors.textMuted),
+                  ],
+                ),
               ),
             ),
             Expanded(
@@ -213,7 +221,9 @@ class _HeroLetterCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final breed = payload.partnerBreed;
-    final awake = state == LetterState.open;
+    // Awake = an unread letter is waiting. Reading happens on its own screen,
+    // and once it is closed the cat sleeps again.
+    final awake = state == LetterState.waiting || state == LetterState.open;
 
     return Bouncy(
       onTap: onTap,
@@ -229,7 +239,8 @@ class _HeroLetterCard extends StatelessWidget {
                   title: 'All quiet',
                   body: payload.idleLine ?? 'Your cat is napping.',
                 ),
-              LetterState.waiting => _Waiting(partner: partner, onRead: onTap),
+              LetterState.waiting =>
+                _Waiting(partner: partner, payload: payload, onRead: onTap),
               LetterState.open => _OpenLetter(payload: payload, partner: partner),
               LetterState.faded => _Quiet(
                   title: 'It drifted away',
@@ -243,39 +254,34 @@ class _HeroLetterCard extends StatelessWidget {
   }
 }
 
-/// A letter has arrived and has NOT been opened. Deliberately gives an explicit
-/// button: relying on "the whole card is tappable" left people prodding the
-/// illustration and wondering why nothing happened.
+/// An unread letter: the cat is awake and SPEAKING it, comic-style. Reading it
+/// (the button) files it into the journal and lets the cat sleep again.
 class _Waiting extends StatelessWidget {
-  const _Waiting({required this.partner, this.onRead});
+  const _Waiting({required this.partner, required this.payload, this.onRead});
 
   final String partner;
+  final WidgetPayload payload;
   final VoidCallback? onRead;
 
   @override
   Widget build(BuildContext context) => Column(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            decoration: BoxDecoration(
-              color: CozyColors.softYellow.withValues(alpha: 0.85),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Text('a letter is waiting', style: CozyText.pill),
-          ),
-          const SizedBox(height: 10),
-          Text('$partner left you something',
+          SpeechBubble(
+            child: Text(
+              payload.text ?? '',
               textAlign: TextAlign.center,
-              style: CozyText.rounded(22, weight: FontWeight.w700)),
-          const SizedBox(height: 14),
+              style: CozyText.rounded(16, weight: FontWeight.w600)
+                  .copyWith(height: 1.4),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text('— $partner', style: CozyText.muted),
+          const SizedBox(height: 12),
           CozyButton(
-            title: 'Read it',
+            title: 'Read it 🐾',
             icon: Icons.mail_outline,
             onTap: onRead,
           ),
-          const SizedBox(height: 8),
-          Text('It fades 16 hours after you open it.',
-              textAlign: TextAlign.center, style: CozyText.muted),
         ],
       );
 }

@@ -63,9 +63,10 @@ enum SharedStore {
         )
     }
 
-    /// Optimistic local open: flips the cat awake immediately, before the app has
-    /// even launched, and leaves a breadcrumb for Flutter to flush to Firestore.
-    static func markOpenedLocally(ttl: TimeInterval) {
+    /// Local acknowledgement of a tap: the letter will be read in the app, so
+    /// the widget's cat goes straight back to sleep, and the breadcrumb tells
+    /// Flutter which letter to open and show.
+    static func markTappedLocally() {
         guard let d = defaults,
               let raw = d.string(forKey: stateKey),
               let data = raw.data(using: .utf8),
@@ -75,9 +76,7 @@ enum SharedStore {
         else { return }
 
         let nowMs = Date().timeIntervalSince1970 * 1000
-        j["state"] = LetterState.open.rawValue
-        j["openedAtMs"] = nowMs
-        j["expiresAtMs"] = nowMs + ttl * 1000
+        j["state"] = LetterState.empty.rawValue
 
         if let out = try? JSONSerialization.data(withJSONObject: j),
            let s = String(data: out, encoding: .utf8) {

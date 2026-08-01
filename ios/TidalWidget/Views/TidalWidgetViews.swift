@@ -23,7 +23,10 @@ struct TidalWidgetEntryView: View {
 }
 
 private func cat(_ entry: TidalEntry, size: CGFloat) -> some View {
-    Image(CatArt.name(catId: entry.state.partnerCatId, awake: entry.resolved == .open))
+    // Awake = an unread letter waits. Reading happens in the app; once read
+    // the cat sleeps again.
+    Image(CatArt.name(catId: entry.state.partnerCatId,
+                      awake: entry.resolved == .waiting || entry.resolved == .open))
         .resizable()
         .scaledToFit()
         .frame(width: size, height: size)
@@ -31,6 +34,34 @@ private func cat(_ entry: TidalEntry, size: CGFloat) -> some View {
 
 private func partner(_ entry: TidalEntry) -> String {
     entry.state.partnerName ?? "Someone"
+}
+
+/// Comic speech bubble with a tail pointing left at the cat.
+struct BubbleShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        let tail: CGFloat = 9
+        var p = Path(roundedRect: CGRect(x: tail, y: 0,
+                                         width: rect.width - tail,
+                                         height: rect.height),
+                     cornerRadius: 14)
+        let cy = rect.height * 0.45
+        p.move(to: CGPoint(x: tail + 1, y: cy - tail))
+        p.addLine(to: CGPoint(x: 0, y: cy))
+        p.addLine(to: CGPoint(x: tail + 1, y: cy + tail))
+        p.closeSubpath()
+        return p
+    }
+}
+
+private func bubble(_ text: String, size: CGFloat) -> some View {
+    Text(text)
+        .font(.system(size: size, weight: .medium, design: .rounded))
+        .foregroundColor(CozyTheme.textPrimary)
+        .padding(.leading, 19)
+        .padding(.trailing, 10)
+        .padding(.vertical, 8)
+        .background(BubbleShape().fill(CozyTheme.cardSecondary))
+        .overlay(BubbleShape().stroke(CozyTheme.sageGreen.opacity(0.5), lineWidth: 1.5))
 }
 
 // MARK: - Small
@@ -43,21 +74,15 @@ struct SmallView: View {
             cat(entry, size: 76)
 
             switch entry.resolved {
-            case .open:
-                // The only state that renders the body.
+            case .open, .waiting:
+                // The letter itself, comic-style, right on the home screen.
                 Text(entry.state.text ?? "")
                     .font(.system(size: 10, weight: .semibold, design: .rounded))
                     .foregroundColor(CozyTheme.textPrimary)
                     .lineLimit(3)
                     .multilineTextAlignment(.center)
-            case .waiting:
-                Text("\(partner(entry)) left you something")
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundColor(CozyTheme.textPrimary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.center)
-                Text("tap to read")
-                    .font(.system(size: 9, weight: .medium, design: .rounded))
+                Text("— \(partner(entry))")
+                    .font(.system(size: 8, weight: .medium, design: .rounded))
                     .foregroundColor(CozyTheme.textMuted)
             case .faded:
                 Text("it drifted away")
@@ -100,31 +125,13 @@ struct MediumView: View {
                 }
 
                 switch entry.resolved {
-                case .open:
-                    Text(entry.state.text ?? "")
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundColor(CozyTheme.textPrimary)
-                        .padding(10)
-                        .background(CozyTheme.cardSecondary)
-                        .cornerRadius(14)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14)
-                                .stroke(CozyTheme.sageGreen.opacity(0.5), lineWidth: 1.5)
-                        )
+                case .open, .waiting:
+                    bubble(entry.state.text ?? "", size: 12)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                case .waiting:
-                    Text("A letter is waiting. Tap to read it — it fades 16 hours after you open it.")
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
-                        .foregroundColor(CozyTheme.textSecondary)
                 case .faded:
-                    Text("That letter has faded.")
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundColor(CozyTheme.textSecondary)
+                    bubble("it drifted away…", size: 12)
                 case .empty:
-                    Text(entry.state.idleLine ?? "Nothing yet. All quiet.")
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
-                        .foregroundColor(CozyTheme.textSecondary)
-                        .lineLimit(3)
+                    bubble(entry.state.idleLine ?? "zzz…", size: 11)
                 }
             }
         }
@@ -133,8 +140,7 @@ struct MediumView: View {
 
     private var badge: String {
         switch entry.resolved {
-        case .open: return "READING 💖"
-        case .waiting: return "✉️ WAITING"
+        case .open, .waiting: return "✉️ NEW"
         case .faded: return "FADED 🌙"
         case .empty: return "ASLEEP 💤"
         }
@@ -174,9 +180,9 @@ struct RectangularView: View {
                 // Lock screen is visible without unlocking, so a waiting letter
                 // shows only that it exists — never its text.
                 switch entry.resolved {
-                case .open:
-                    Text(entry.state.text ?? "").font(.system(size: 10)).lineLimit(1)
-                case .waiting:
+                case .open, .waiting:
+                    // Lock screen is visible without unlocking; show that a
+                    // letter exists, never its words.
                     Text("left you something").font(.system(size: 10))
                 case .faded:
                     Text("it drifted away").font(.system(size: 10))

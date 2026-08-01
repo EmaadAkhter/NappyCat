@@ -9,6 +9,7 @@ import 'models/widget_payload.dart';
 import 'screens/compose/compose_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/journal/journal_screen.dart';
+import 'screens/letter/letter_screen.dart';
 import 'screens/onboarding/cat_naming_screen.dart';
 import 'screens/onboarding/cat_selection_screen.dart';
 import 'screens/onboarding/widget_guide_screen.dart';
@@ -210,9 +211,27 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
         openedAt: pending.tappedAt,
       );
     } catch (_) {
-      // Already opened, or already gone. The widget has shown it either way,
-      // and the stream is the source of truth from here.
+      // Already opened, or already gone; showing it is still correct if it is
+      // within its window, and LetterScreen renders the gone case gently.
     }
+
+    if (!mounted) return;
+    final snap = await services.db
+        .doc('pairs/${me.pairId}/messages/${pending.messageId}')
+        .get();
+    if (!mounted || !snap.exists) return;
+    final letter = TidalMessage.fromDoc(snap);
+    if (!letter.isVisibleAt(services.clock.now())) return;
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => LetterScreen(
+          letter: letter,
+          openedAt: letter.openedAt ?? pending.tappedAt,
+          now: services.clock.now,
+        ),
+      ),
+    );
   }
 
   void _publish(WidgetPayload payload) {
@@ -222,21 +241,12 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
     WidgetBridge.publish(payload);
   }
 
-  /// Set the instant the user taps Read, before the server write lands. The
-  /// stream catches up within a second or two, but without this the tap
-  /// produced no visible change until then — which read as "the button doesn't
-  /// work unless you hold it".
-  TidalMessage? _justOpened;
-  DateTime? _justOpenedAt;
-
   @override
   Widget build(BuildContext context) {
     final pairId = me.pairId!;
 
     return StreamBuilder<AppUser?>(
-      // The partner's real profile. Before this, their name and cat were known
-      // only from letter denormalization — so with no letter in flight the app
-      // fell back to the grey tabby, every time, no matter what anyone chose.
+      // The partner's real profile — name and cat for the hero and widget.
       stream: widget.partnerId.isEmpty
           ? const Stream.empty()
           : services.auth.watch(widget.partnerId),
@@ -246,103 +256,69 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
         return StreamBuilder<TidalMessage?>(
           stream: services.messages.inbox(pairId: pairId, myId: me.uid),
           builder: (context, waitingSnap) {
-            return StreamBuilder<TidalMessage?>(
-              stream:
-                  services.messages.currentlyOpen(pairId: pairId, myId: me.uid),
-              builder: (context, openSnap) {
-                final waiting = waitingSnap.data;
-                var open = openSnap.data;
+            if (waitingSnap.hasError) {
+              debugPrint('inbox stream error: ${waitingSnap.error}');
+            }
+            final waiting = waitingSnap.data;
 
-                // Optimistic open: trust the local tap until the server
-                // catches up, then drop it.
-                if (open != null && open.id == _justOpened?.id) {
-                  _justOpened = null;
-                  _justOpenedAt = null;
-                }
-                final justOpened = _justOpened;
-                if (open == null && justOpened != null) {
-                  open = TidalMessage(
-                    id: justOpened.id,
-                    senderId: justOpened.senderId,
-                    recipientId: justOpened.recipientId,
-                    text: justOpened.text,
-                    sentAt: justOpened.sentAt,
-                    openedAt: _justOpenedAt,
-                    expiresAt: _justOpenedAt!.add(Config.openTtl),
-                    senderCatId: justOpened.senderCatId,
-                    senderName: justOpened.senderName,
-                  );
-                }
+            // The cat is awake exactly while an UNREAD letter waits. Reading
+            // happens on its own screen; once opened the cat goes back to
+            // sleep and the letter rests in the journal until it fades.
+            final payload = WidgetPayload(
+              state:
+                  waiting != null ? LetterState.waiting : LetterState.empty,
+              messageId: waiting?.id,
+              text: waiting?.text,
+              partnerName: partner?.displayName ?? waiting?.senderName,
+              partnerCatId: partner?.catId ?? waiting?.senderCatId,
+              idleLine: _idleLine,
+              canSendAt: me.lastSentAt?.add(Config.sendCooldown),
+            );
 
-                final letter = open ??
-                    (waiting?.id == justOpened?.id ? null : waiting);
+            // One derivation, one writer — the widget and this screen render
+            // from the identical payload, so they cannot disagree.
+            _publish(payload);
 
-                // A stream error must never masquerade as an empty state:
-                // that is exactly how the missing currentlyOpen index read as
-                // "the letter vanished" while the server had accepted the open.
-                if (openSnap.hasError) {
-                  debugPrint('currentlyOpen stream error: ${openSnap.error}');
-                }
-                if (waitingSnap.hasError) {
-                  debugPrint('inbox stream error: ${waitingSnap.error}');
-                }
-                final payload = WidgetPayload(
-                  state: open != null
-                      ? LetterState.open
-                      : letter != null
-                          ? LetterState.waiting
-                          : LetterState.empty,
-                  messageId: (open ?? letter)?.id,
-                  text: (open ?? letter)?.text,
-                  openedAt: open?.openedAt,
-                  expiresAt: open?.expiresAt,
-                  partnerName:
-                      partner?.displayName ?? (open ?? letter)?.senderName,
-                  partnerCatId:
-                      partner?.catId ?? (open ?? letter)?.senderCatId,
-                  idleLine: _idleLine,
-                  canSendAt: me.lastSentAt?.add(Config.sendCooldown),
-                );
-
-                // One derivation, one writer — the widget and this screen
-                // render from the identical payload, so they cannot disagree.
-                _publish(payload);
-
-                return HomeScreen(
-                  myBreed: CatBreed.fromId(me.catId),
-                  myName: me.displayName,
-                  payload: payload,
-                  onChangeCat: () => _changeCat(context),
-                  onOpenJournal: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => JournalScreen(
-                        messages: services.messages.thread(pairId: pairId),
-                        myId: me.uid,
-                        myBreed: CatBreed.fromId(me.catId),
-                        now: services.clock.now,
-                      ),
-                    ),
+            return HomeScreen(
+              myBreed: CatBreed.fromId(me.catId),
+              myName: me.displayName,
+              payload: payload,
+              onEditName: () => _editName(context),
+              onChangeCat: () => _changeCat(context),
+              onOpenJournal: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => JournalScreen(
+                    messages: services.messages.thread(pairId: pairId),
+                    myId: me.uid,
+                    myBreed: CatBreed.fromId(me.catId),
+                    now: services.clock.now,
                   ),
-                  onCompose: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => ComposeScreen(
-                        partnerName: payload.partnerName ?? 'them',
-                        canSendAt: payload.canSendAt,
-                        onSend: (text) => _send(pairId, text),
-                      ),
-                    ),
+                ),
+              ),
+              onCompose: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ComposeScreen(
+                    partnerName: payload.partnerName ?? 'them',
+                    canSendAt: payload.canSendAt,
+                    onSend: (text) => _send(pairId, text),
                   ),
-                  onOpenLetter: waiting == null || open != null
-                      ? null
-                      : () {
-                          setState(() {
-                            _justOpened = waiting;
-                            _justOpenedAt = services.clock.now();
-                          });
-                          _open(pairId, waiting);
-                        },
-                );
-              },
+                ),
+              ),
+              onOpenLetter: waiting == null
+                  ? null
+                  : () {
+                      final openedAt = services.clock.now();
+                      _open(pairId, waiting);
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => LetterScreen(
+                            letter: waiting,
+                            openedAt: openedAt,
+                            now: services.clock.now,
+                          ),
+                        ),
+                      );
+                    },
             );
           },
         );
@@ -379,6 +355,23 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
     unawaited(services.messages
         .open(pairId: pairId, messageId: letter.id)
         .catchError((_) {}));
+  }
+
+  void _editName(BuildContext context) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => CatNamingScreen(
+        breed: CatBreed.fromId(me.catId),
+        initialName: me.displayName,
+        onConfirmed: (name) async {
+          await services.auth.saveProfile(
+            uid: me.uid,
+            displayName: name,
+            catId: me.catId,
+          );
+          if (context.mounted) Navigator.of(context).pop();
+        },
+      ),
+    ));
   }
 
   void _changeCat(BuildContext context) {

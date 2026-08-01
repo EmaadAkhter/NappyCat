@@ -69,10 +69,11 @@ object SharedState {
     }
 
     /**
-     * Optimistic local open: flips the cat awake immediately, before the app has
-     * launched, and leaves a breadcrumb for Flutter to flush to Firestore.
+     * Local acknowledgement of a tap: the letter will be read in the app, so
+     * the widget's cat goes straight back to sleep, and a breadcrumb tells
+     * Flutter which letter to open and show.
      */
-    fun markOpenedLocally(context: Context, ttlMs: Long) {
+    fun markTappedLocally(context: Context) {
         val p = prefs(context)
         val raw = p.getString(STATE_KEY, null) ?: return
         try {
@@ -81,9 +82,7 @@ object SharedState {
             val messageId = j.optStringOrNull("messageId") ?: return
 
             val now = System.currentTimeMillis()
-            j.put("state", "open")
-            j.put("openedAtMs", now)
-            j.put("expiresAtMs", now + ttlMs)
+            j.put("state", "empty")
 
             p.edit()
                 .putString(STATE_KEY, j.toString())
