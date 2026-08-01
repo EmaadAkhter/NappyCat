@@ -71,7 +71,7 @@ struct SmallView: View {
 
     var body: some View {
         VStack(spacing: 6) {
-            cat(entry, size: 76)
+            cat(entry, size: 96)
 
             switch entry.resolved {
             case .open, .waiting:
@@ -107,7 +107,7 @@ struct MediumView: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            cat(entry, size: 94)
+            cat(entry, size: 118)
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
