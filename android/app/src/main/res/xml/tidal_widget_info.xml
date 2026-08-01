@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- updatePeriodMillis: 30 min (the platform minimum) as a backstop. The
+     provider re-derives awake/asleep on every render, so even a fully dropped
+     fade alarm cannot leave the cat awake for more than one period. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:initialLayout="@layout/tidal_widget"
     android:minWidth="180dp"
@@ -9,4 +12,4 @@
     android:widgetCategory="home_screen"
     android:description="@string/tidal_widget_description"
     android:previewLayout="@layout/tidal_widget"
-    android:updatePeriodMillis="0" />
+    android:updatePeriodMillis="1800000" />

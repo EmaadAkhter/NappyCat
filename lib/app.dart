@@ -180,6 +180,12 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
   TidalMessage? _justOpened;
   DateTime? _justOpenedAt;
 
+  /// Fires when the current reading window lapses. Without it nothing
+  /// republishes: streams only emit on DATA changes, and time passing is not
+  /// one — the widget stayed awake, showing the letter, indefinitely.
+  Timer? _sleepTimer;
+  DateTime? _sleepAt;
+
   @override
   void initState() {
     super.initState();
@@ -189,15 +195,30 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _sleepTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // The widget tap launches the app, so resume is when the breadcrumb is
-    // waiting. Cold start is covered by initState.
-    if (state == AppLifecycleState.resumed) _reconcile();
+    if (state == AppLifecycleState.resumed) {
+      _reconcile();
+      // Recompute with a fresh clock: the reading window may have lapsed while
+      // we were backgrounded, and the rebuild republishes the sleeping state.
+      if (mounted) setState(() {});
+    }
+  }
+
+  void _armSleepTimer(DateTime windowEnd) {
+    if (_sleepAt == windowEnd) return;
+    _sleepTimer?.cancel();
+    _sleepAt = windowEnd;
+    var wait = windowEnd.difference(services.clock.now());
+    if (wait.isNegative) wait = Duration.zero;
+    _sleepTimer = Timer(wait + const Duration(seconds: 1), () {
+      if (mounted) setState(() {});
+    });
   }
 
   /// Flushes a widget tap to Firestore. The open is fire-and-forget through the
@@ -288,6 +309,10 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
                     waiting != null && waiting.id != _justOpened?.id;
 
                 final letter = reading ? open : (unread ? waiting : null);
+
+                if (reading) {
+                  _armSleepTimer(openedAt.add(Config.readingWindow));
+                }
 
                 final payload = WidgetPayload(
                   state: reading

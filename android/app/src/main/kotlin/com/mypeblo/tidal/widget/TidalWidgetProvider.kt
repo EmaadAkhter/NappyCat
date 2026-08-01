@@ -127,16 +127,17 @@ class TidalWidgetProvider : HomeWidgetProvider() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
 
-        // Exact alarms need a user-granted permission from Android 12 onwards.
-        // Falling back to an inexact alarm is right: the cat sleeping a few
-        // minutes late is far better than asking for a scary permission, and
-        // onUpdate recomputes expiry regardless.
+        // Exact alarms need a user-granted permission from Android 12 onwards,
+        // and plain RTC does not wake the device — with the screen off it may
+        // simply never fire, which read as "the cat never sleeps". WAKEUP +
+        // allow-while-idle fires within a reasonable window even in Doze, and
+        // updatePeriodMillis is the backstop if even that is dropped.
         val canBeExact = Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
             alarms.canScheduleExactAlarms()
         if (canBeExact) {
-            alarms.setExactAndAllowWhileIdle(AlarmManager.RTC, atMs, pending)
+            alarms.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMs, pending)
         } else {
-            alarms.set(AlarmManager.RTC, atMs, pending)
+            alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMs, pending)
         }
     }
 }
