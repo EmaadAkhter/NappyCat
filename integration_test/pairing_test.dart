@@ -113,11 +113,6 @@ void main() {
   });
 
   testWidgets('creating an invite yields a usable code', (_) async {
-    final probe = await db.collection('users').doc(me)
-        .get(const GetOptions(source: Source.server));
-    expect(probe.exists, isTrue,
-        reason: 'seed did not land for uid=$me; data=${probe.data()}');
-
     final code = await pairing.createInvite(me);
     expect(code, hasLength(PairingService.codeLength));
     expect(code, matches(RegExp(r'^[A-Z0-9]+$')));

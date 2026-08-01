@@ -30,6 +30,25 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- Home-screen widget. updatePeriodMillis is 0: refreshes come from the
+             app publishing the shared cache and from the fade alarm, never from
+             polling, which would drain battery for an app that changes three
+             times a day. -->
+        <receiver
+            android:name=".widget.TidalWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/tidal_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.OpenLetterReceiver"
+            android:exported="false" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
