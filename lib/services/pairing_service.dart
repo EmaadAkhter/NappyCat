@@ -100,8 +100,12 @@ class PairingService {
       // Already removed, or the pair is gone: clearing the pointer is what
       // actually un-pairs this device, so carry on.
     }
+    // One write, both fields: the rules only allow wiping the send stamp
+    // together with the pointer, after membership is already gone — a new
+    // pairing starts with a fresh timer.
     await _db.collection('users').doc(uid).update({
       'pairId': FieldValue.delete(),
+      'lastSentAt': FieldValue.delete(),
     });
   }
 

@@ -52,6 +52,18 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys()
              .hasOnly(['displayName','catId','pairId','lastSeenAt']);
 
+      // (C) leaving a pair: the pointer and the send stamp clear together,
+      // so a fresh pairing starts with a fresh timer. Gated on ALREADY being
+      // out of that pair's memberIds — otherwise clear-and-repoint would
+      // launder the cooldown without ever leaving.
+      allow update: if signedIn() && userId == uid()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['pairId','lastSentAt'])
+        && !('pairId' in request.resource.data)
+        && !('lastSentAt' in request.resource.data)
+        && ('pairId' in resource.data)
+        && !(uid() in get(/databases/$(database)/documents/pairs/$(resource.data.pairId)).data.memberIds);
+
       // (B) the rate-limit stamp. serverTimestamp() only, forward only,
       //     once per cooldown. This is what makes the message rule enforceable.
       allow update: if signedIn() && userId == uid()

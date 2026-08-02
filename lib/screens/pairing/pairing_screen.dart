@@ -64,6 +64,29 @@ class _PairingScreenState extends State<PairingScreen> {
     }
   }
 
+  /// Abandon the current invite (or a pair the other person walked out of)
+  /// and go back to the start. This is the only exit when the code on screen
+  /// is for a pair that will never complete.
+  Future<void> _startOver() async {
+    setState(() => _busy = true);
+    try {
+      await widget.pairing.leave(uid: widget.uid, pairId: _code!);
+      if (!mounted) return;
+      setState(() {
+        _code = null;
+        _mode = _Mode.choose;
+        _error = null;
+        _busy = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'Could not reset. Check your connection.';
+        _busy = false;
+      });
+    }
+  }
+
   Future<void> _join() async {
     setState(() {
       _busy = true;
@@ -207,6 +230,15 @@ class _PairingScreenState extends State<PairingScreen> {
                   style: CozyText.rounded(13,
                       weight: FontWeight.w700,
                       color: CozyColors.textSecondary)),
+            ),
+          ),
+          Bouncy(
+            onTap: _busy ? null : _startOver,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text('✕ Cancel & start over',
+                  style: CozyText.rounded(13,
+                      weight: FontWeight.w700, color: Colors.redAccent)),
             ),
           ),
         ],
