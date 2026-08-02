@@ -12,6 +12,10 @@ on:
       - 'desktop/**'
       - '**.md'
 
+# The default GITHUB_TOKEN is read-only; pushing the builds branch needs this.
+permissions:
+  contents: write
+
 jobs:
   windows:
     runs-on: windows-latest
