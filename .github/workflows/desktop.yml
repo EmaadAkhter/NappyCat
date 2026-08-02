@@ -1,8 +1,16 @@
-# Windows cannot be cross-compiled from a Mac, so CI builds it. Manual trigger
-# only: two people do not need a build on every commit.
+# Windows cannot be cross-compiled from a Mac, so CI builds it.
+#
+# Runs on pushes that touch app code, and publishes NappyCat-windows.zip to an
+# orphan `builds` branch — retrievable over plain git+SSH, so no API token is
+# ever needed on the laptop side.
 name: desktop
 on:
   workflow_dispatch:
+  push:
+    branches: [master]
+    paths-ignore:
+      - 'desktop/**'
+      - '**.md'
 
 jobs:
   windows:
@@ -21,5 +29,14 @@ jobs:
         with:
           name: NappyCat-windows
           path: NappyCat-windows.zip
-
-# indexing nudge
+      - name: Publish zip to builds branch
+        shell: bash
+        run: |
+          mkdir /tmp/out && cp NappyCat-windows.zip /tmp/out/
+          cd /tmp/out
+          git init -b builds
+          git config user.name ci
+          git config user.email ci@nappycat
+          git add NappyCat-windows.zip
+          git commit -m "windows build $GITHUB_SHA"
+          git push --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" builds
