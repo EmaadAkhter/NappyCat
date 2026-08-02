@@ -359,6 +359,8 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
                   // showing just the cat. Web-only by construction.
                   mini: Config.mini,
                   onSendText: (text) => _send(pairId, text),
+                  onDisconnect: () =>
+                      _disconnect(context, payload.partnerName ?? 'them'),
                   onEditName: () => _editName(context),
                   onChangeCat: () => _changeCat(context),
                   onOpenJournal: () => Navigator.of(context).push(
@@ -398,6 +400,39 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
         );
       },
     );
+  }
+
+  Future<void> _disconnect(BuildContext context, String partner) async {
+    final sure = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text('Disconnect from $partner?'),
+        content: const Text(
+            'Your cats stop carrying letters. What you can still read '
+            'stays until it fades.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Stay')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Disconnect',
+                  style: TextStyle(color: Colors.redAccent))),
+        ],
+      ),
+    );
+    if (sure != true || !mounted) return;
+    try {
+      await services.pairing.leave(uid: me.uid, pairId: me.pairId!);
+      // Routing takes over: no pairId -> pairing screen.
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Could not disconnect: $e')));
+      }
+    }
   }
 
   Future<String?> _send(String pairId, String text) async {

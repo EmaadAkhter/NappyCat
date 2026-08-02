@@ -86,6 +86,25 @@ class PairingService {
     return normalized;
   }
 
+  /// Disconnect: remove myself from the pair, then drop my pointer to it.
+  /// The pair doc survives for the other person (their letters keep fading on
+  /// schedule); their side shows the pairing screen again and they can
+  /// disconnect too. Removing membership first matters — it is what revokes
+  /// my read access under the rules.
+  Future<void> leave({required String uid, required String pairId}) async {
+    try {
+      await pairRef(pairId).update({
+        'memberIds': FieldValue.arrayRemove([uid]),
+      });
+    } on FirebaseException {
+      // Already removed, or the pair is gone: clearing the pointer is what
+      // actually un-pairs this device, so carry on.
+    }
+    await _db.collection('users').doc(uid).update({
+      'pairId': FieldValue.delete(),
+    });
+  }
+
   /// Live view of the pair, so the "waiting for them" screen advances by itself
   /// the moment the other person joins.
   Stream<List<String>> members(String code) =>

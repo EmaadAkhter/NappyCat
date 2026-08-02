@@ -30,6 +30,7 @@ class HomeScreen extends StatefulWidget {
     required this.onOpenJournal,
     required this.onEditName,
     this.onSendText,
+    this.onDisconnect,
     this.mini = false,
   });
 
@@ -50,6 +51,9 @@ class HomeScreen extends StatefulWidget {
 
   /// Inline send for the widget's composer bar; returns an error line or null.
   final Future<String?> Function(String text)? onSendText;
+
+  /// Unpair, after the caller's own confirmation flow.
+  final VoidCallback? onDisconnect;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();

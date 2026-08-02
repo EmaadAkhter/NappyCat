@@ -83,9 +83,16 @@ service cloud.firestore {
         && request.resource.data.inviteExpiresAt < request.time + duration.value(24,'h')
         && pairId.size() >= 8;
 
-      allow update: if signedIn() && joinable() && !(uid() in resource.data.memberIds)
+      // Two legal updates: a joiner adds exactly themselves; a member removes
+      // exactly themselves (disconnect). Nothing else ever changes.
+      allow update: if signedIn()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds'])
-        && request.resource.data.memberIds == resource.data.memberIds.concat([uid()]);
+        && (
+          (joinable() && !(uid() in resource.data.memberIds)
+            && request.resource.data.memberIds == resource.data.memberIds.concat([uid()]))
+          || (member()
+            && request.resource.data.memberIds == resource.data.memberIds.removeAll([uid()]))
+        );
 
       allow delete: if false;
 
