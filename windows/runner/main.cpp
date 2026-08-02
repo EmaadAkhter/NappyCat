@@ -58,8 +58,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
     int y = work.top + 24;
     // Reopen where they last parked it, unless that spot fell off-screen
     // (monitor unplugged, resolution change) - then the default corner.
-    wchar_t* local_app_data = _wgetenv(L"LOCALAPPDATA");
-    if (local_app_data) {
+    wchar_t local_app_data[MAX_PATH];
+    if (::GetEnvironmentVariableW(L"LOCALAPPDATA", local_app_data,
+                                  MAX_PATH) > 0) {
       std::ifstream f(std::wstring(local_app_data) + L"\\NappyCat\\widget_pos.txt");
       int sx, sy;
       if (f >> sx >> sy) {

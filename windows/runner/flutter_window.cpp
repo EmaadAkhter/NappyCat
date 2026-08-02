@@ -97,8 +97,9 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
       if (g_pin_to_desktop) {
         RECT rc;
         ::GetWindowRect(hwnd, &rc);
-        wchar_t* local_app_data = _wgetenv(L"LOCALAPPDATA");
-        if (local_app_data) {
+        wchar_t local_app_data[MAX_PATH];
+        if (::GetEnvironmentVariableW(L"LOCALAPPDATA", local_app_data,
+                                      MAX_PATH) > 0) {
           std::wstring dir = std::wstring(local_app_data) + L"\\NappyCat";
           ::CreateDirectoryW(dir.c_str(), nullptr);
           std::ofstream f(dir + L"\\widget_pos.txt", std::ios::trunc);
