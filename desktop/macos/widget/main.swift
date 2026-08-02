@@ -49,7 +49,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     window = NSWindow(
       contentRect: NSRect(x: 0, y: 0, width: 360, height: 540),
-      styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
+      // No fullSizeContentView: the traffic lights get their own strip
+      // instead of squatting on the app's header.
+      styleMask: [.titled, .closable, .resizable],
       backing: .buffered, defer: false)
     window.title = "NappyCat"
     window.titlebarAppearsTransparent = true
