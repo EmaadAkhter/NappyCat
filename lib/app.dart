@@ -358,6 +358,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
                   // Desktop-widget mode: a small pinned browser/PWA window
                   // showing just the cat. Web-only by construction.
                   mini: Config.mini,
+                  onSendText: (text) => _send(pairId, text),
                   onEditName: () => _editName(context),
                   onChangeCat: () => _changeCat(context),
                   onOpenJournal: () => Navigator.of(context).push(

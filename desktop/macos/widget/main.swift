@@ -2,11 +2,12 @@ import Cocoa
 import WebKit
 
 // The macOS "widget", two surfaces from one menu-bar app:
-//  - a floating, join-all-Spaces mini window: just the cat card (?mini=1)
-//  - the menu-bar cat: LEFT-click expands a popover with the FULL app
-//    (letters, compose, journal); right-click gets the utility menu.
-// Both are WKWebViews over the deployed web app sharing the default (
-// persistent) data store — one sign-in covers both, and none of
+//  - a floating, join-all-Spaces mini window: the cat card + composer
+//  - the menu-bar cat: LEFT-click drops the same card in a panel anchored
+//    directly under the icon (an NSPanel, not NSPopover — popovers drift
+//    and detach); right-click gets the utility menu.
+// Both are WKWebViews over the deployed web app (?mini=1) sharing the
+// default persistent data store — one sign-in covers both, and none of
 // FirebaseAuth's data-protection-keychain pain applies because neither is
 // a native Firebase client.
 //
@@ -16,18 +17,38 @@ import WebKit
 let miniURL = URL(string: "https://napcat-2e042.web.app/?mini=1")!
 let fullURL = URL(string: "https://napcat-2e042.web.app/")!
 
+/// Borderless panels refuse key status by default, which would kill typing
+/// in the composer.
+final class KeyablePanel: NSPanel {
+  override var canBecomeKey: Bool { true }
+}
+
 class AppDelegate: NSObject, NSApplicationDelegate {
   var statusItem: NSStatusItem!
   var window: NSWindow!
-  var popover: NSPopover!
+  var panel: KeyablePanel!
   var utilityMenu: NSMenu!
+  var monitors: [Any] = []
+  var lastHide = Date.distantPast
 
   func applicationDidFinishLaunching(_ note: Notification) {
+    // Purge stale page caches and any service worker left by older builds —
+    // but never localStorage/IndexedDB, which hold the sign-in. Pages load
+    // only after the purge so a deploy always shows on next launch.
+    let store = WKWebsiteDataStore.default()
+    let staleTypes: Set<String> = [
+      WKWebsiteDataTypeDiskCache,
+      WKWebsiteDataTypeMemoryCache,
+      WKWebsiteDataTypeServiceWorkerRegistrations,
+    ]
+    let fresh = URLRequest(
+      url: miniURL, cachePolicy: .reloadIgnoringLocalCacheData,
+      timeoutInterval: 30)
+
     let miniWeb = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
-    miniWeb.load(URLRequest(url: miniURL))
 
     window = NSWindow(
-      contentRect: NSRect(x: 0, y: 0, width: 360, height: 520),
+      contentRect: NSRect(x: 0, y: 0, width: 360, height: 540),
       styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
       backing: .buffered, defer: false)
     window.title = "NappyCat"
@@ -39,18 +60,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     window.setFrameAutosaveName("NappyCatWidget")
     window.makeKeyAndOrderFront(nil)
 
-    // Full app in the popover. Built once and kept alive so it doesn't
-    // reload (and re-run auth) on every expand.
-    let fullWeb = WKWebView(
-      frame: NSRect(x: 0, y: 0, width: 380, height: 640),
+    // The drop-down: same mini card, anchored under the menu-bar icon.
+    let popWeb = WKWebView(
+      frame: NSRect(x: 0, y: 0, width: 360, height: 560),
       configuration: WKWebViewConfiguration())
-    fullWeb.load(URLRequest(url: fullURL))
-    let vc = NSViewController()
-    vc.view = fullWeb
-    popover = NSPopover()
-    popover.behavior = .transient // closes on outside click
-    popover.contentSize = NSSize(width: 380, height: 640)
-    popover.contentViewController = vc
+    popWeb.autoresizingMask = [.width, .height]
+    let wrap = NSView(frame: popWeb.frame)
+    wrap.wantsLayer = true
+    wrap.layer?.cornerRadius = 18
+    wrap.layer?.masksToBounds = true
+    wrap.addSubview(popWeb)
+    panel = KeyablePanel(
+      contentRect: NSRect(x: 0, y: 0, width: 360, height: 560),
+      styleMask: [.borderless, .nonactivatingPanel],
+      backing: .buffered, defer: false)
+    panel.isOpaque = false
+    panel.backgroundColor = .clear
+    panel.hasShadow = true
+    panel.level = .statusBar
+    panel.isReleasedWhenClosed = false
+    panel.hidesOnDeactivate = false
+    panel.contentView = wrap
+
+    store.removeData(ofTypes: staleTypes, modifiedSince: .distantPast) {
+      miniWeb.load(fresh)
+      popWeb.load(fresh)
+    }
 
     utilityMenu = NSMenu()
     let show = NSMenuItem(
@@ -88,12 +123,47 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         at: NSPoint(x: 0, y: button.bounds.height + 4), in: button)
       return
     }
-    if popover.isShown {
-      popover.performClose(nil)
-    } else {
-      popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-      NSApp.activate(ignoringOtherApps: true)
+    if panel.isVisible {
+      hidePanel()
+    } else if Date().timeIntervalSince(lastHide) > 0.3 {
+      // The dismiss monitors may have just closed it from this same click's
+      // mouseDown; without the debounce the mouseUp reopens it instantly.
+      showPanel()
     }
+  }
+
+  func showPanel() {
+    guard let button = statusItem.button, let bw = button.window else { return }
+    // X comes from the icon; Y from the screen's visibleFrame, whose top
+    // already sits just below the menu bar (button coords lie about it).
+    let anchor = bw.convertToScreen(button.convert(button.bounds, to: nil))
+    let screen = bw.screen ?? NSScreen.main
+    let visible = screen?.visibleFrame ?? anchor
+    let origin = NSPoint(
+      x: min(anchor.maxX, visible.maxX) - panel.frame.width,
+      y: visible.maxY - panel.frame.height - 4)
+    panel.setFrameOrigin(origin)
+    panel.makeKeyAndOrderFront(nil)
+    // Any click outside the panel dismisses it, like a real menu — global
+    // catches other apps, local catches our own windows (status icon too).
+    monitors.append(NSEvent.addGlobalMonitorForEvents(
+      matching: [.leftMouseDown, .rightMouseDown]
+    ) { [weak self] _ in
+      self?.hidePanel()
+    } as Any)
+    monitors.append(NSEvent.addLocalMonitorForEvents(
+      matching: [.leftMouseDown, .rightMouseDown]
+    ) { [weak self] event in
+      if event.window !== self?.panel { self?.hidePanel() }
+      return event
+    } as Any)
+  }
+
+  func hidePanel() {
+    panel.orderOut(nil)
+    lastHide = Date()
+    for m in monitors { NSEvent.removeMonitor(m) }
+    monitors.removeAll()
   }
 
   @objc func showCat() {

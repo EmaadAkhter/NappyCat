@@ -25,6 +25,7 @@ class HomeScreen extends StatefulWidget {
     required this.onChangeCat,
     required this.onOpenJournal,
     required this.onEditName,
+    this.onSendText,
     this.mini = false,
   });
 
@@ -42,6 +43,9 @@ class HomeScreen extends StatefulWidget {
   final VoidCallback onChangeCat;
   final VoidCallback onOpenJournal;
   final VoidCallback onEditName;
+
+  /// Inline send for the widget's composer bar; returns an error line or null.
+  final Future<String?> Function(String text)? onSendText;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -79,20 +83,119 @@ class _HomeScreenState extends State<HomeScreen> {
     final partner = p.partnerName ?? 'your person';
 
     if (widget.mini) {
+      // The widget is the whole app in miniature: bubble on top, the cat
+      // grown into every remaining pixel, one composer bar. No cards, no
+      // chrome — the window itself is the card.
+      final line = switch (state) {
+        LetterState.waiting => '✉️ a new letter — tap to read',
+        LetterState.open => p.text ?? '',
+        LetterState.faded => 'it drifted away…',
+        LetterState.empty => p.idleLine ?? 'zzz…',
+      };
+      final awake =
+          state == LetterState.waiting || state == LetterState.open;
       return Scaffold(
         body: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(12),
-              child: _HeroLetterCard(
-                state: state,
-                payload: p,
-                partner: partner,
-                // Same in-place reveal as everywhere else — without this the
-                // desktop widget showed the teaser but the tap did nothing.
-                onTap:
-                    state == LetterState.waiting ? widget.onOpenLetter : null,
-              ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Bouncy(
+                        onTap: widget.onEditName,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(_greeting,
+                                style: CozyText.rounded(18,
+                                    weight: FontWeight.w700)),
+                            Text(
+                                'You are ${widget.myName} to them · tap to edit',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: CozyText.rounded(11,
+                                    color: CozyColors.textSecondary)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    PopupMenuButton<String>(
+                      tooltip: 'more',
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                      onSelected: (v) => switch (v) {
+                        'journal' => widget.onOpenJournal(),
+                        'cat' => widget.onChangeCat(),
+                        _ => null,
+                      },
+                      itemBuilder: (_) => const [
+                        PopupMenuItem(
+                            value: 'journal', child: Text('Still here')),
+                        PopupMenuItem(
+                            value: 'cat', child: Text('Change my cat')),
+                      ],
+                      child: const Padding(
+                        padding: EdgeInsets.all(6),
+                        child: Icon(Icons.more_horiz,
+                            size: 20, color: CozyColors.textMuted),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Expanded(
+                  child: Bouncy(
+                    onTap: state == LetterState.waiting
+                        ? widget.onOpenLetter
+                        : null,
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SpeechBubble(
+                            tail: BubbleTail.down,
+                            child: Text(
+                              line,
+                              textAlign: TextAlign.center,
+                              style:
+                                  CozyText.rounded(15, weight: FontWeight.w600)
+                                      .copyWith(height: 1.35),
+                            ),
+                          ),
+                          if (state == LetterState.waiting ||
+                              state == LetterState.open)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text('— $partner',
+                                  textAlign: TextAlign.center,
+                                  style: CozyText.muted),
+                            ),
+                          // The tail points straight at the cat's head; the
+                          // cat scales to whatever height is left.
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.contain,
+                              child: CatIllustration(
+                                  breed: p.partnerBreed,
+                                  awake: awake,
+                                  size: 330),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                _MiniComposer(
+                  partner: partner,
+                  canSendAt: p.canSendAt,
+                  now: now,
+                  onSend: widget.onSendText,
+                ),
+              ],
             ),
           ),
         ),
@@ -288,6 +391,135 @@ class _HeroLetterCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The widget's whole control surface: a text bar with a send button, and a
+/// ⋯ menu holding everything that isn't writing. While the tide is out the
+/// bar itself shows the countdown, so no extra chrome appears either way.
+class _MiniComposer extends StatefulWidget {
+  const _MiniComposer({
+    required this.partner,
+    required this.canSendAt,
+    required this.now,
+    required this.onSend,
+  });
+
+  final String partner;
+  final DateTime? canSendAt;
+  final DateTime now;
+  final Future<String?> Function(String text)? onSend;
+
+  @override
+  State<_MiniComposer> createState() => _MiniComposerState();
+}
+
+class _MiniComposerState extends State<_MiniComposer> {
+  final _text = TextEditingController();
+  bool _sending = false;
+
+  @override
+  void dispose() {
+    _text.dispose();
+    super.dispose();
+  }
+
+  bool get _locked =>
+      widget.canSendAt != null && widget.now.isBefore(widget.canSendAt!);
+
+  Future<void> _submit() async {
+    final body = _text.text.trim();
+    if (body.isEmpty || _sending || _locked || widget.onSend == null) return;
+    setState(() => _sending = true);
+    final error = await widget.onSend!(body);
+    if (!mounted) return;
+    setState(() => _sending = false);
+    if (error == null) {
+      _text.clear();
+      FocusScope.of(context).unfocus();
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final canWrite = !_locked && widget.onSend != null;
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            height: 44,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: CozyColors.cardBackground,
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: cozyShadow(swiftUiRadius: 3, y: 1),
+            ),
+            child: canWrite
+                ? Center(
+                    child: TextField(
+                      controller: _text,
+                      onSubmitted: (_) => _submit(),
+                      textInputAction: TextInputAction.send,
+                      maxLength: 500,
+                      style: CozyText.rounded(14),
+                      decoration: InputDecoration(
+                        isCollapsed: true,
+                        border: InputBorder.none,
+                        counterText: '',
+                        hintText: 'write to ${widget.partner}…',
+                        hintStyle: CozyText.rounded(14,
+                            color: CozyColors.textMuted),
+                      ),
+                    ),
+                  )
+                : Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🐾 ', style: TextStyle(fontSize: 13)),
+                        Flexible(
+                          child: Text(
+                            'next letter in ${_remaining(widget.canSendAt!, widget.now)}',
+                            overflow: TextOverflow.ellipsis,
+                            style: CozyText.rounded(13,
+                                color: CozyColors.textSecondary),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Bouncy(
+          onTap: canWrite && !_sending ? _submit : null,
+          child: Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: canWrite ? CozyColors.dustyPink : CozyColors.cardBackground,
+              shape: BoxShape.circle,
+              boxShadow: cozyShadow(swiftUiRadius: 3, y: 1),
+            ),
+            child: _sending
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Icon(Icons.send_rounded,
+                    size: 18,
+                    color: canWrite
+                        ? CozyColors.textPrimary
+                        : CozyColors.textMuted),
+          ),
+        ),
+      ],
     );
   }
 }
