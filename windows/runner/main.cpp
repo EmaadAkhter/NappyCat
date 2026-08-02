@@ -48,7 +48,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
     HWND hwnd = window.GetHandle();
     // Frameless, no taskbar entry, parked top-right, and kept at the bottom
     // of the Z-order (the WM_WINDOWPOSCHANGING hook stops clicks raising it).
-    ::SetWindowLongPtr(hwnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
+    // THICKFRAME enables the native resize loop; WM_NCCALCSIZE in the
+    // message handler suppresses the frame it would normally draw.
+    ::SetWindowLongPtr(hwnd, GWL_STYLE,
+                       WS_POPUP | WS_VISIBLE | WS_THICKFRAME);
     ::SetWindowLongPtr(hwnd, GWL_EXSTYLE,
                        ::GetWindowLongPtr(hwnd, GWL_EXSTYLE) |
                            WS_EX_TOOLWINDOW);
@@ -56,15 +59,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
     ::SystemParametersInfo(SPI_GETWORKAREA, 0, &work, 0);
     int x = work.right - 340 - 24;
     int y = work.top + 24;
+    int w = 340;
+    int h = 460;
     // Reopen where they last parked it, unless that spot fell off-screen
     // (monitor unplugged, resolution change) - then the default corner.
     wchar_t local_app_data[MAX_PATH];
     if (::GetEnvironmentVariableW(L"LOCALAPPDATA", local_app_data,
                                   MAX_PATH) > 0) {
       std::ifstream f(std::wstring(local_app_data) + L"\\NappyCat\\widget_pos.txt");
-      int sx, sy;
+      int sx, sy, sw, sh;
       if (f >> sx >> sy) {
-        RECT probe = {sx, sy, sx + 340, sy + 460};
+        if (f >> sw >> sh) {
+          if (sw >= 260 && sh >= 340) {
+            w = sw;
+            h = sh;
+          }
+        }
+        RECT probe = {sx, sy, sx + w, sy + h};
         if (::MonitorFromRect(&probe, MONITOR_DEFAULTTONULL) != nullptr) {
           x = sx;
           y = sy;
@@ -72,7 +83,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
       }
     }
     g_pin_to_desktop = true;
-    ::SetWindowPos(hwnd, HWND_BOTTOM, x, y, 340, 460,
+    ::SetWindowPos(hwnd, HWND_BOTTOM, x, y, w, h,
                    SWP_FRAMECHANGED | SWP_NOACTIVATE);
   }
 

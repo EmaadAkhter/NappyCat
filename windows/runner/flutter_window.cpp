@@ -43,6 +43,10 @@ bool FlutterWindow::OnCreate() {
           ::ReleaseCapture();
           ::SendMessage(GetHandle(), WM_NCLBUTTONDOWN, HTCAPTION, 0);
           result->Success();
+        } else if (call.method_name() == "resize") {
+          ::ReleaseCapture();
+          ::SendMessage(GetHandle(), WM_NCLBUTTONDOWN, HTBOTTOMRIGHT, 0);
+          result->Success();
         } else {
           result->NotImplemented();
         }
@@ -93,6 +97,19 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
         reinterpret_cast<WINDOWPOS*>(lparam)->hwndInsertAfter = HWND_BOTTOM;
       }
       break;
+    case WM_NCCALCSIZE:
+      // Widget mode: eat the THICKFRAME's visual frame — client area covers
+      // the whole window, only the resize behavior remains.
+      if (g_pin_to_desktop && wparam) {
+        return 0;
+      }
+      break;
+    case WM_GETMINMAXINFO:
+      if (g_pin_to_desktop) {
+        auto* info = reinterpret_cast<MINMAXINFO*>(lparam);
+        info->ptMinTrackSize = {260, 340};
+      }
+      break;
     case WM_NCHITTEST: {
       // Movable widget: the top strip (and Ctrl+anywhere) acts as a grab
       // handle; the rest of the card stays tappable for the letter reveal.
@@ -120,7 +137,10 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
           std::wstring dir = std::wstring(local_app_data) + L"\\NappyCat";
           ::CreateDirectoryW(dir.c_str(), nullptr);
           std::ofstream f(dir + L"\\widget_pos.txt", std::ios::trunc);
-          if (f) f << rc.left << " " << rc.top;
+          if (f) {
+            f << rc.left << " " << rc.top << " " << (rc.right - rc.left)
+              << " " << (rc.bottom - rc.top);
+          }
         }
       }
       break;

@@ -99,172 +99,207 @@ class _HomeScreenState extends State<HomeScreen> {
       final awake = state == LetterState.waiting || state == LetterState.open;
       return Scaffold(
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
-            child: Column(
-              children: [
-                Row(
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+                child: Column(
                   children: [
-                    // Windows-only drag handle: the frameless widget window
-                    // can't be moved any other way — the Flutter view eats
-                    // every mouse message before native hit-testing sees it.
-                    if (Config.mini &&
-                        !kIsWeb &&
-                        defaultTargetPlatform == TargetPlatform.windows)
-                      Listener(
-                        onPointerDown: (_) => unawaited(
-                            const MethodChannel('nappycat/widget')
-                                .invokeMethod('drag')
-                                .catchError((_) => null)),
-                        child: Container(
-                          width: 26,
-                          height: 26,
-                          margin: const EdgeInsets.only(right: 8),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: CozyColors.cardBackground,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: cozyShadow(swiftUiRadius: 2, y: 1),
-                          ),
-                          child: const Icon(Icons.drag_indicator,
-                              size: 16, color: CozyColors.textMuted),
-                        ),
-                      ),
-                    Expanded(
-                      child: Bouncy(
-                        onTap: widget.onEditName,
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 38,
-                              height: 38,
+                    Row(
+                      children: [
+                        // Windows-only drag handle: the frameless widget window
+                        // can't be moved any other way — the Flutter view eats
+                        // every mouse message before native hit-testing sees it.
+                        if (Config.mini &&
+                            !kIsWeb &&
+                            defaultTargetPlatform == TargetPlatform.windows)
+                          Listener(
+                            onPointerDown: (_) => unawaited(
+                              const MethodChannel(
+                                'nappycat/widget',
+                              ).invokeMethod('drag').catchError((_) => null),
+                            ),
+                            child: Container(
+                              width: 26,
+                              height: 26,
+                              margin: const EdgeInsets.only(right: 8),
+                              alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: CozyColors.cardBackground,
-                                shape: BoxShape.circle,
-                                boxShadow: cozyShadow(swiftUiRadius: 3, y: 1),
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: cozyShadow(swiftUiRadius: 2, y: 1),
                               ),
-                              child: CatIllustration(
-                                breed: widget.myBreed,
-                                awake: true,
-                                size: 30,
+                              child: const Icon(
+                                Icons.drag_indicator,
+                                size: 16,
+                                color: CozyColors.textMuted,
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _greeting,
-                                    style: CozyText.rounded(
-                                      18,
-                                      weight: FontWeight.w700,
+                          ),
+                        Expanded(
+                          child: Bouncy(
+                            onTap: widget.onEditName,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 38,
+                                  height: 38,
+                                  decoration: BoxDecoration(
+                                    color: CozyColors.cardBackground,
+                                    shape: BoxShape.circle,
+                                    boxShadow: cozyShadow(
+                                      swiftUiRadius: 3,
+                                      y: 1,
                                     ),
                                   ),
-                                  Text(
-                                    'You are ${widget.myName} to them · tap to edit',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: CozyText.rounded(
-                                      11,
-                                      color: CozyColors.textSecondary,
-                                    ),
+                                  child: CatIllustration(
+                                    breed: widget.myBreed,
+                                    awake: true,
+                                    size: 30,
                                   ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _greeting,
+                                        style: CozyText.rounded(
+                                          18,
+                                          weight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      Text(
+                                        'You are ${widget.myName} to them · tap to edit',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: CozyText.rounded(
+                                          11,
+                                          color: CozyColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        PopupMenuButton<String>(
+                          tooltip: 'more',
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          onSelected: (v) => switch (v) {
+                            'journal' => widget.onOpenJournal(),
+                            'cat' => widget.onChangeCat(),
+                            _ => null,
+                          },
+                          itemBuilder: (_) => const [
+                            PopupMenuItem(
+                              value: 'journal',
+                              child: Text('Still here'),
+                            ),
+                            PopupMenuItem(
+                              value: 'cat',
+                              child: Text('Change my cat'),
                             ),
                           ],
+                          child: const Padding(
+                            padding: EdgeInsets.all(6),
+                            child: Icon(
+                              Icons.more_horiz,
+                              size: 20,
+                              color: CozyColors.textMuted,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Expanded(
+                      child: Bouncy(
+                        onTap: state == LetterState.waiting
+                            ? widget.onOpenLetter
+                            : null,
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SpeechBubble(
+                                tail: BubbleTail.down,
+                                child: Text(
+                                  line,
+                                  textAlign: TextAlign.center,
+                                  style: CozyText.rounded(
+                                    15,
+                                    weight: FontWeight.w600,
+                                  ).copyWith(height: 1.35),
+                                ),
+                              ),
+                              if (state == LetterState.waiting ||
+                                  state == LetterState.open)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: Text(
+                                    '— $partner',
+                                    textAlign: TextAlign.center,
+                                    style: CozyText.muted,
+                                  ),
+                                ),
+                              // The tail points straight at the cat's head; the
+                              // cat scales to whatever height is left.
+                              Flexible(
+                                child: FittedBox(
+                                  fit: BoxFit.contain,
+                                  child: CatIllustration(
+                                    breed: p.partnerBreed,
+                                    awake: awake,
+                                    size: 330,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                    PopupMenuButton<String>(
-                      tooltip: 'more',
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      onSelected: (v) => switch (v) {
-                        'journal' => widget.onOpenJournal(),
-                        'cat' => widget.onChangeCat(),
-                        _ => null,
-                      },
-                      itemBuilder: (_) => const [
-                        PopupMenuItem(
-                          value: 'journal',
-                          child: Text('Still here'),
-                        ),
-                        PopupMenuItem(
-                          value: 'cat',
-                          child: Text('Change my cat'),
-                        ),
-                      ],
-                      child: const Padding(
-                        padding: EdgeInsets.all(6),
-                        child: Icon(
-                          Icons.more_horiz,
-                          size: 20,
-                          color: CozyColors.textMuted,
-                        ),
-                      ),
+                    const SizedBox(height: 6),
+                    _MiniComposer(
+                      partner: partner,
+                      canSendAt: p.canSendAt,
+                      now: now,
+                      onSend: widget.onSendText,
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Expanded(
-                  child: Bouncy(
-                    onTap: state == LetterState.waiting
-                        ? widget.onOpenLetter
-                        : null,
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SpeechBubble(
-                            tail: BubbleTail.down,
-                            child: Text(
-                              line,
-                              textAlign: TextAlign.center,
-                              style: CozyText.rounded(
-                                15,
-                                weight: FontWeight.w600,
-                              ).copyWith(height: 1.35),
-                            ),
-                          ),
-                          if (state == LetterState.waiting ||
-                              state == LetterState.open)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 2),
-                              child: Text(
-                                '— $partner',
-                                textAlign: TextAlign.center,
-                                style: CozyText.muted,
-                              ),
-                            ),
-                          // The tail points straight at the cat's head; the
-                          // cat scales to whatever height is left.
-                          Flexible(
-                            child: FittedBox(
-                              fit: BoxFit.contain,
-                              child: CatIllustration(
-                                breed: p.partnerBreed,
-                                awake: awake,
-                                size: 330,
-                              ),
-                            ),
-                          ),
-                        ],
+              ),
+              // Windows-only resize grip, mirror of the drag handle.
+              if (Config.mini &&
+                  !kIsWeb &&
+                  defaultTargetPlatform == TargetPlatform.windows)
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Listener(
+                    onPointerDown: (_) => unawaited(
+                      const MethodChannel(
+                        'nappycat/widget',
+                      ).invokeMethod('resize').catchError((_) => null),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(3),
+                      child: Icon(
+                        Icons.south_east,
+                        size: 13,
+                        color: CozyColors.textMuted,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 6),
-                _MiniComposer(
-                  partner: partner,
-                  canSendAt: p.canSendAt,
-                  now: now,
-                  onSend: widget.onSendText,
-                ),
-              ],
-            ),
+            ],
           ),
         ),
       );
