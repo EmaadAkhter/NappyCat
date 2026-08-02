@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'config.dart';
@@ -65,7 +66,9 @@ class _RootState extends State<_Root> {
   Future<void> _boot() async {
     try {
       final user = await services.auth.signIn();
-      _showedGuide = await GuideFlag.wasShown();
+      // No home-screen widget exists on the web, so no tour and no shared
+      // prefs — home_widget would throw MissingPluginException here.
+      _showedGuide = kIsWeb || await GuideFlag.wasShown();
       await services.clock.sync(user.uid);
       if (mounted) setState(() => _uid = user.uid);
     } catch (e) {
@@ -225,6 +228,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
   /// SDK: offline it persists to the on-disk mutation queue and lands on the
   /// next connection, even if the app is killed in between.
   Future<void> _reconcile() async {
+    if (kIsWeb) return; // no widget, no breadcrumbs
     final pending = await WidgetBridge.takePendingOpen();
     if (pending == null) return;
     await WidgetBridge.clearPendingOpen();
@@ -342,6 +346,9 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
                   myBreed: CatBreed.fromId(me.catId),
                   myName: me.displayName,
                   payload: payload,
+                  // Desktop-widget mode: a small pinned browser/PWA window
+                  // showing just the cat. Web-only by construction.
+                  mini: kIsWeb && Uri.base.queryParameters['mini'] == '1',
                   onEditName: () => _editName(context),
                   onChangeCat: () => _changeCat(context),
                   onOpenJournal: () => Navigator.of(context).push(

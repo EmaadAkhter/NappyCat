@@ -1,1 +1,61 @@
-{"firestore":{"rules":"firestore.rules","indexes":"firestore.indexes.json"},"emulators":{"firestore":{"port":8089},"auth":{"port":9099},"ui":{"enabled":false},"singleProjectMode":true},"flutter":{"platforms":{"android":{"default":{"projectId":"napcat-2e042","appId":"1:397624542945:android:3b7c2531f3feae1443d9a0","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"napcat-2e042","appId":"1:397624542945:ios:ae44365c9810969843d9a0","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"napcat-2e042","configurations":{"android":"1:397624542945:android:3b7c2531f3feae1443d9a0","ios":"1:397624542945:ios:ae44365c9810969843d9a0"}}}}}}
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8089
+    },
+    "auth": {
+      "port": 9099
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "napcat-2e042",
+          "appId": "1:397624542945:android:3b7c2531f3feae1443d9a0",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "napcat-2e042",
+          "appId": "1:397624542945:ios:ae44365c9810969843d9a0",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "napcat-2e042",
+          "configurations": {
+            "android": "1:397624542945:android:3b7c2531f3feae1443d9a0",
+            "ios": "1:397624542945:ios:ae44365c9810969843d9a0",
+            "web": "1:397624542945:web:12f6d2d1e7d5bbc043d9a0"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

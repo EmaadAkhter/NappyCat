@@ -1,4 +1,5 @@
-import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import '../../models/cat_breed.dart';
 import '../../theme/cozy_colors.dart';
@@ -19,7 +20,10 @@ class WidgetGuideScreen extends StatelessWidget {
   final CatBreed breed;
   final VoidCallback onFinish;
 
-  List<(String, String, String, Color)> get _steps => Platform.isIOS
+  // defaultTargetPlatform is safe on web (unlike dart:io) and even reports
+  // iOS when the page is open in Safari on an iPhone, which keeps the copy apt.
+  List<(String, String, String, Color)> get _steps =>
+      defaultTargetPlatform == TargetPlatform.iOS
       ? const [
           ('1', 'Long-Press Home Screen',
               'Touch and hold any empty area until the icons jiggle.',

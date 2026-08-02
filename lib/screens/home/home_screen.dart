@@ -25,7 +25,12 @@ class HomeScreen extends StatefulWidget {
     required this.onChangeCat,
     required this.onOpenJournal,
     required this.onEditName,
+    this.mini = false,
   });
+
+  /// Desktop-widget mode (web `?mini=1`): just the cat and its bubble, sized
+  /// for a small pinned window. Everything else lives in the full app.
+  final bool mini;
 
   final CatBreed myBreed;
   final String myName;
@@ -72,6 +77,19 @@ class _HomeScreenState extends State<HomeScreen> {
     final p = widget.payload;
     final state = p.effectiveState(now);
     final partner = p.partnerName ?? 'your person';
+
+    if (widget.mini) {
+      return Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(12),
+              child: _HeroLetterCard(state: state, payload: p, partner: partner),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       body: SafeArea(

@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -56,7 +53,6 @@ class DefaultFirebaseOptions {
     projectId: 'napcat-2e042',
     storageBucket: 'napcat-2e042.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBfPRpnlEld3mQ2XBbX4dgJy-qbesorDHw',
     appId: '1:397624542945:ios:ae44365c9810969843d9a0',
@@ -64,5 +60,14 @@ class DefaultFirebaseOptions {
     projectId: 'napcat-2e042',
     storageBucket: 'napcat-2e042.firebasestorage.app',
     iosBundleId: 'com.mypeblo.tidal',
+  );
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCpDprIax8MAD_kvdIR1Gl93GdyAHg_D5s',
+    appId: '1:397624542945:web:12f6d2d1e7d5bbc043d9a0',
+    messagingSenderId: '397624542945',
+    projectId: 'napcat-2e042',
+    authDomain: 'napcat-2e042.firebaseapp.com',
+    storageBucket: 'napcat-2e042.firebasestorage.app',
+    measurementId: 'G-P46FSR0Z92',
   );
 }
