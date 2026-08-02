@@ -62,6 +62,7 @@ class CozyButton extends StatelessWidget {
     this.background = CozyColors.sageGreen,
     this.foreground = CozyColors.textPrimary,
     this.onTap,
+    this.dense = false,
   });
 
   final String title;
@@ -69,6 +70,9 @@ class CozyButton extends StatelessWidget {
   final Color background;
   final Color foreground;
   final VoidCallback? onTap;
+
+  /// Widget-window sizing: shorter button, smaller radius.
+  final bool dense;
 
   @override
   Widget build(BuildContext context) {
@@ -79,10 +83,11 @@ class CozyButton extends StatelessWidget {
         onTap: onTap,
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 28),
+          padding: EdgeInsets.symmetric(
+              vertical: dense ? 10 : 16, horizontal: dense ? 18 : 28),
           decoration: BoxDecoration(
             color: background,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(dense ? 18 : 24),
             boxShadow: enabled
                 ? cozyShadow(
                     swiftUiRadius: 8,

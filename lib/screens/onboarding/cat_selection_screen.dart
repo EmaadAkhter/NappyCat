@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../config.dart';
 import '../../models/cat_breed.dart';
 import '../../theme/cozy_colors.dart';
 import '../../theme/cozy_text.dart';
@@ -29,19 +30,39 @@ class _CatSelectionScreenState extends State<CatSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final compact = Config.mini;
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 16),
+            if (Navigator.of(context).canPop())
+              Align(
+                alignment: Alignment.topLeft,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 8, 0, 0),
+                  child: Bouncy(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: const Padding(
+                      padding: EdgeInsets.all(6),
+                      child: Icon(Icons.close,
+                          size: 22, color: CozyColors.textMuted),
+                    ),
+                  ),
+                ),
+              )
+            else
+              SizedBox(height: compact ? 8 : 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const PastelIconBadge(icon: Icons.pets),
-                const SizedBox(width: 10),
+                if (!compact) ...[
+                  const PastelIconBadge(icon: Icons.pets),
+                  const SizedBox(width: 10),
+                ],
                 Flexible(
                   child: Text('Adopt Your Nap Cat',
-                      style: CozyText.rounded(26, weight: FontWeight.w700)),
+                      style: CozyText.rounded(compact ? 20 : 26,
+                          weight: FontWeight.w700)),
                 ),
               ],
             ),
@@ -54,7 +75,7 @@ class _CatSelectionScreenState extends State<CatSelectionScreen> {
                 style: CozyText.body,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: compact ? 10 : 16),
             Expanded(
               child: GridView.builder(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
@@ -70,17 +91,19 @@ class _CatSelectionScreenState extends State<CatSelectionScreen> {
                   return _BreedCard(
                     breed: breed,
                     selected: breed == _selected,
+                    compact: compact,
                     onTap: () => setState(() => _selected = breed),
                   );
                 },
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+              padding: EdgeInsets.fromLTRB(24, 0, 24, compact ? 10 : 12),
               child: CozyButton(
                 title: 'Adopt ${_selected.label}',
                 icon: Icons.favorite,
                 background: _selected.accent,
+                dense: compact,
                 onTap: () => widget.onSelected(_selected),
               ),
             ),
@@ -96,11 +119,13 @@ class _BreedCard extends StatelessWidget {
     required this.breed,
     required this.selected,
     required this.onTap,
+    this.compact = false,
   });
 
   final CatBreed breed;
   final bool selected;
   final VoidCallback onTap;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -144,8 +169,13 @@ class _BreedCard extends StatelessWidget {
                   ),
                 ),
               ),
+              // The cat takes every pixel the card can spare.
               Expanded(
-                child: CatIllustration(breed: breed, awake: true, size: 100),
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child:
+                      CatIllustration(breed: breed, awake: true, size: 140),
+                ),
               ),
               // Scales down instead of truncating: "Panda/Koala Cat" was
               // rendering as "Panda/Koal…" on narrow phones.
@@ -157,17 +187,19 @@ class _BreedCard extends StatelessWidget {
                   style: CozyText.rounded(16, weight: FontWeight.w700),
                 ),
               ),
-              const SizedBox(height: 4),
-              SizedBox(
-                height: 32,
-                child: Text(
-                  breed.personality,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: CozyText.muted,
+              if (!compact) ...[
+                const SizedBox(height: 4),
+                SizedBox(
+                  height: 32,
+                  child: Text(
+                    breed.personality,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: CozyText.muted,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../config.dart';
 import '../../models/cat_breed.dart';
 import '../../theme/cozy_colors.dart';
 import '../../theme/cozy_text.dart';
@@ -51,28 +52,50 @@ class _CatNamingScreenState extends State<CatNamingScreen> {
   @override
   Widget build(BuildContext context) {
     final count = _controller.text.characters.length;
+    // The widget window is ~540px tall; the phone spacing overflows it and
+    // pushed routes have no system back gesture on desktop.
+    final compact = Config.mini;
+    final renaming = widget.initialName.isNotEmpty;
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.only(bottom: 20),
           child: Column(
             children: [
-              const SizedBox(height: 24),
-              Text('Name Your Cat 🐾',
-                  style: CozyText.rounded(28, weight: FontWeight.w700)),
+              if (Navigator.of(context).canPop())
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 8, 0, 0),
+                    child: Bouncy(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: const Padding(
+                        padding: EdgeInsets.all(6),
+                        child: Icon(Icons.close,
+                            size: 22, color: CozyColors.textMuted),
+                      ),
+                    ),
+                  ),
+                ),
+              SizedBox(height: compact ? 4 : 24),
+              Text(renaming ? 'Change Your Name 🐾' : 'Name Your Cat 🐾',
+                  style: CozyText.rounded(compact ? 22 : 28,
+                      weight: FontWeight.w700)),
               const SizedBox(height: 6),
               Text('Your ${widget.breed.label} carries this name to them',
                   style: CozyText.body, textAlign: TextAlign.center),
-              const SizedBox(height: 20),
+              SizedBox(height: compact ? 12 : 20),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30),
                 child: CozyCard(
-                  padding: 24,
+                  padding: compact ? 14 : 24,
                   radius: 28,
                   child: Column(
                     children: [
                       CatIllustration(
-                          breed: widget.breed, awake: true, size: 160),
+                          breed: widget.breed,
+                          awake: true,
+                          size: compact ? 110 : 160),
                       const SizedBox(height: 12),
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -89,11 +112,12 @@ class _CatNamingScreenState extends State<CatNamingScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: compact ? 12 : 20),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: CozyCard(
                   radius: 24,
+                  padding: compact ? 14 : 20,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -162,11 +186,11 @@ class _CatNamingScreenState extends State<CatNamingScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 28),
+              SizedBox(height: compact ? 14 : 28),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: CozyButton(
-                  title: 'Confirm & Adopt 🐾',
+                  title: renaming ? 'Save 🐾' : 'Confirm & Adopt 🐾',
                   icon: Icons.check_circle,
                   onTap: _submit,
                 ),
