@@ -10,7 +10,7 @@ enum CatBreed {
       'Loves cozy napping and gourmet cheese slices.'),
   tuxedo('B&W Tuxedo', 'Chicken Hood 🍗', 0xFFE8927C,
       'Dapper & polite, but obsessed with snack time.'),
-  ginger('Ginger Cat', 'Tomato Hood 🍅', 0xFFE05A47,
+  ginger('White Cat', 'Tomato Hood 🍅', 0xFFE05A47,
       'Warm, energetic, and spicy like fresh tomato soup.'),
   pumpkin('Cream Cat', 'Pumpkin Hood 🎃', 0xFFE88735,
       'Sweet, gentle, and loves warm autumn sunbeams.'),
