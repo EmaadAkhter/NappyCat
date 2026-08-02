@@ -1,5 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
+
+import 'desktop_session.dart';
 
 /// Anonymous auth for now.
 ///
@@ -15,8 +19,14 @@ class AuthService {
   User? get current => _auth.currentUser;
   Stream<User?> get changes => _auth.authStateChanges();
 
-  Future<User> signIn() async =>
-      _auth.currentUser ?? (await _auth.signInAnonymously()).user!;
+  Future<User> signIn() async {
+    final desktop = !kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.macOS ||
+            defaultTargetPlatform == TargetPlatform.windows ||
+            defaultTargetPlatform == TargetPlatform.linux);
+    if (desktop) return DesktopSession.ensureSignedIn(_auth);
+    return _auth.currentUser ?? (await _auth.signInAnonymously()).user!;
+  }
 
   DocumentReference<Map<String, dynamic>> userRef(String uid) =>
       _db.collection('users').doc(uid);

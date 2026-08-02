@@ -1,0 +1,18 @@
+#!/bin/bash
+URL="https://napcat-2e042.web.app/"
+PROFILE="$HOME/Library/Application Support/NappyCat/Browser"
+mkdir -p "$PROFILE"
+for NAME in "Google Chrome" "Brave Browser" "Microsoft Edge" "Chromium" "Vivaldi"; do
+  for BASE in "/Applications" "$HOME/Applications"; do
+    A="$BASE/$NAME.app"
+    [ -d "$A" ] || continue
+    BIN="$A/Contents/MacOS/$(defaults read "$A/Contents/Info" CFBundleExecutable 2>/dev/null)"
+    [ -x "$BIN" ] || continue
+    exec "$BIN" --app="$URL" --window-size=430,800 --user-data-dir="$PROFILE" \
+      --no-first-run --no-default-browser-check
+  done
+done
+# No Chromium-family browser: plain tab in the default browser. Safari caps
+# script-writable storage at ~7 days, so pairing may not survive there —
+# the README tells people to install Chrome for the real experience.
+exec /usr/bin/open "$URL"
