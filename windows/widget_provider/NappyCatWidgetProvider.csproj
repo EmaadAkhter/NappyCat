@@ -15,6 +15,11 @@
     <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
     <EnableMsixTooling>false</EnableMsixTooling>
     <CsWinRTAotOptimizerEnabled>false</CsWinRTAotOptimizerEnabled>
+    <!-- dotnet-CLI-friendly: skips the PRI/appx MSBuild tasks that only ship
+         with Visual Studio, and the bootstrapper we don't need (the exe runs
+         inside our MSIX, so the framework package resolves via the manifest). -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250108002" />
