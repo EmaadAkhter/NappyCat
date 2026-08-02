@@ -1,5 +1,9 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show MethodChannel;
+import '../../config.dart';
 import '../../models/cat_breed.dart';
 import '../../models/widget_payload.dart';
 import '../../theme/cozy_colors.dart';
@@ -101,6 +105,31 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Row(
                   children: [
+                    // Windows-only drag handle: the frameless widget window
+                    // can't be moved any other way — the Flutter view eats
+                    // every mouse message before native hit-testing sees it.
+                    if (Config.mini &&
+                        !kIsWeb &&
+                        defaultTargetPlatform == TargetPlatform.windows)
+                      Listener(
+                        onPointerDown: (_) => unawaited(
+                            const MethodChannel('nappycat/widget')
+                                .invokeMethod('drag')
+                                .catchError((_) => null)),
+                        child: Container(
+                          width: 26,
+                          height: 26,
+                          margin: const EdgeInsets.only(right: 8),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: CozyColors.cardBackground,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: cozyShadow(swiftUiRadius: 2, y: 1),
+                          ),
+                          child: const Icon(Icons.drag_indicator,
+                              size: 16, color: CozyColors.textMuted),
+                        ),
+                      ),
                     Expanded(
                       child: Bouncy(
                         onTap: widget.onEditName,

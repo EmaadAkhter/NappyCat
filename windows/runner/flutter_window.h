@@ -3,6 +3,8 @@
 
 #include <flutter/dart_project.h>
 #include <flutter/flutter_view_controller.h>
+#include <flutter/method_channel.h>
+#include <flutter/standard_method_codec.h>
 
 #include <memory>
 
@@ -31,6 +33,11 @@ class FlutterWindow : public Win32Window {
 
   // The Flutter instance hosted by this window.
   std::unique_ptr<flutter::FlutterViewController> flutter_controller_;
+
+  // Widget mode: lets the Dart drag-handle move the frameless window (the
+  // Flutter child view eats every mouse message, so native hit-testing on
+  // the top-level window never fires).
+  std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> drag_channel_;
 };
 
 #endif  // RUNNER_FLUTTER_WINDOW_H_
