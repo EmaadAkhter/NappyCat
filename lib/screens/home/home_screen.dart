@@ -199,6 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           onSelected: (v) => switch (v) {
                             'journal' => widget.onOpenJournal(),
                             'cat' => widget.onChangeCat(),
+                            'disconnect' => widget.onDisconnect?.call(),
                             _ => null,
                           },
                           itemBuilder: (_) => const [
@@ -209,6 +210,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             PopupMenuItem(
                               value: 'cat',
                               child: Text('Change my cat'),
+                            ),
+                            PopupMenuItem(
+                              value: 'disconnect',
+                              child: Text(
+                                'Disconnect',
+                                style: TextStyle(color: Colors.redAccent),
+                              ),
                             ),
                           ],
                           child: const Padding(
