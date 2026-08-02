@@ -1,7 +1,16 @@
-# NappyCat full setup. Fetched and run elevated by setup.cmd — double-click
-# that, not this. Installs the app + desktop-pinned widget, and (best-effort)
-# the Win+W board widget package.
+# NappyCat full setup — run from ANY PowerShell with:
+#   irm https://github.com/EmaadAkhter/NappyCat/raw/builds/setup.ps1 | iex
+# Relaunches itself elevated (UAC prompt), then installs the app, the
+# desktop-pinned widget, and (best-effort) the Win+W board widget package.
 $ErrorActionPreference = "Stop"
+
+$identity = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
+if (-not $identity.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+  Write-Host "Asking for administrator rights..." -ForegroundColor Cyan
+  Start-Process powershell -Verb RunAs -ArgumentList `
+    '-NoProfile -ExecutionPolicy Bypass -Command "irm https://github.com/EmaadAkhter/NappyCat/raw/builds/setup.ps1 | iex; pause"'
+  return
+}
 $base = "https://github.com/EmaadAkhter/NappyCat/raw/builds"
 $dir = "$env:LOCALAPPDATA\NappyCat"
 
