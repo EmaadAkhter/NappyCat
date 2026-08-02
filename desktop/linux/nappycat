@@ -1,0 +1,14 @@
+#!/bin/sh
+# NappyCat for Linux.
+#
+# There is no native build: Firebase has no Linux SDK for Flutter desktop, so
+# rather than ship a hollow app this launches the hosted app in an app-mode
+# window (no browser chrome). Works with Chrome, Chromium, Brave or Edge.
+URL="https://napcat-2e042.web.app/?mini=1"
+for BIN in google-chrome chromium chromium-browser brave-browser microsoft-edge; do
+  if command -v "$BIN" >/dev/null 2>&1; then
+    exec "$BIN" --app="$URL" --window-size=460,820
+  fi
+done
+echo "NappyCat needs Chrome, Chromium, Brave or Edge installed." >&2
+exit 1

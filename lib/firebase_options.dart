@@ -25,15 +25,9 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -69,5 +63,24 @@ class DefaultFirebaseOptions {
     authDomain: 'napcat-2e042.firebaseapp.com',
     storageBucket: 'napcat-2e042.firebasestorage.app',
     measurementId: 'G-P46FSR0Z92',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyBfPRpnlEld3mQ2XBbX4dgJy-qbesorDHw',
+    appId: '1:397624542945:ios:ad1cb45faea1264943d9a0',
+    messagingSenderId: '397624542945',
+    projectId: 'napcat-2e042',
+    storageBucket: 'napcat-2e042.firebasestorage.app',
+    iosBundleId: 'com.mypeblo.tidal.desktop',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyCpDprIax8MAD_kvdIR1Gl93GdyAHg_D5s',
+    appId: '1:397624542945:web:bdf075da2475b3de43d9a0',
+    messagingSenderId: '397624542945',
+    projectId: 'napcat-2e042',
+    authDomain: 'napcat-2e042.firebaseapp.com',
+    storageBucket: 'napcat-2e042.firebasestorage.app',
+    measurementId: 'G-5FFGJDMBCY',
   );
 }

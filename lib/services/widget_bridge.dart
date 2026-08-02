@@ -34,6 +34,8 @@ class WidgetBridge {
 
   static Future<void> publish(WidgetPayload payload) async {
     try {
+      // Desktop and web have no home-screen widget plugin at all; skip before
+      // the platform channel throws.
       await _prepare();
       await HomeWidget.saveWidgetData<String>(
         stateKey,

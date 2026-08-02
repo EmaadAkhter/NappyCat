@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=NappyCat
+Comment=A slow, disappearing letterbox for two people
+Exec=nappycat
+Terminal=false
+Type=Application
+Categories=Network;Chat;

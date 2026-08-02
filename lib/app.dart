@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'config.dart';
@@ -21,6 +22,14 @@ import 'services/widget_bridge.dart';
 import 'theme/cozy_colors.dart';
 import 'theme/cozy_text.dart';
 import 'theme/cozy_theme.dart';
+
+/// Only the phones have a home-screen widget (and its shared prefs, tours and
+/// breadcrumbs). Web and desktop must never touch those plugins — they throw
+/// MissingPluginException, and in _boot that read as a fatal boot error.
+bool get _hasHomeWidget =>
+    !kIsWeb &&
+    (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS);
 
 class TidalApp extends StatelessWidget {
   const TidalApp({super.key});
@@ -68,7 +77,7 @@ class _RootState extends State<_Root> {
       final user = await services.auth.signIn();
       // No home-screen widget exists on the web, so no tour and no shared
       // prefs — home_widget would throw MissingPluginException here.
-      _showedGuide = kIsWeb || await GuideFlag.wasShown();
+      _showedGuide = !_hasHomeWidget || await GuideFlag.wasShown();
       await services.clock.sync(user.uid);
       if (mounted) setState(() => _uid = user.uid);
     } catch (e) {
@@ -228,7 +237,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
   /// SDK: offline it persists to the on-disk mutation queue and lands on the
   /// next connection, even if the app is killed in between.
   Future<void> _reconcile() async {
-    if (kIsWeb) return; // no widget, no breadcrumbs
+    if (!_hasHomeWidget) return; // no widget, no breadcrumbs
     final pending = await WidgetBridge.takePendingOpen();
     if (pending == null) return;
     await WidgetBridge.clearPendingOpen();

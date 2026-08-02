@@ -1,0 +1,23 @@
+# Windows cannot be cross-compiled from a Mac, so CI builds it. Manual trigger
+# only: two people do not need a build on every commit.
+name: desktop
+on:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: flutter build windows --release --dart-define=TIDAL_ENV=prod
+      - name: Package
+        shell: pwsh
+        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath NappyCat-windows.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NappyCat-windows
+          path: NappyCat-windows.zip
