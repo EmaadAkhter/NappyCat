@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:home_widget/home_widget.dart';
 import '../models/widget_payload.dart';
 
@@ -33,6 +36,20 @@ class WidgetBridge {
       HomeWidget.setAppGroupId(appGroupId);
 
   static Future<void> publish(WidgetPayload payload) async {
+    // Windows: the Widgets Board provider (windows/widget_provider) reads this
+    // file — same single-writer contract as the phone widgets, different pipe.
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.windows) {
+      try {
+        final dir = Directory(
+            '${Platform.environment['LOCALAPPDATA']}\\NappyCat');
+        await dir.create(recursive: true);
+        await File('${dir.path}\\widget_state.json')
+            .writeAsString(jsonEncode(payload.toJson()));
+      } catch (_) {
+        // Same rule as below: the widget must never take the app down.
+      }
+      return;
+    }
     try {
       // Desktop and web have no home-screen widget plugin at all; skip before
       // the platform channel throws.

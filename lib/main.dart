@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'app.dart';
 import 'config.dart';
@@ -8,8 +9,10 @@ import 'firebase_options.dart';
 import 'services/background_refresh.dart';
 import 'services/services.dart';
 
-Future<void> main() async {
+Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+  Config.mini = args.contains('--mini') ||
+      (kIsWeb && Uri.base.queryParameters['mini'] == '1');
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

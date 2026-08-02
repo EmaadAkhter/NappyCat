@@ -54,14 +54,57 @@ jobs:
           $bmp.Save("smoke.png")
           Get-Content smoke.txt
           Stop-Process -Name ($exe.BaseName) -Force -ErrorAction SilentlyContinue
+      # ---- Windows 11 Widgets Board package ----
+      # Widget providers must have package identity, so this wraps the same
+      # Release build + a COM provider exe into a self-signed MSIX. Marked
+      # continue-on-error so a packaging failure never blocks the plain zip.
+      - name: Build widget provider
+        continue-on-error: true
+        run: dotnet publish windows/widget_provider/NappyCatWidgetProvider.csproj -c Release -r win-x64 -o provider_out
+      - name: Package + sign MSIX
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $layout = "msix_layout"
+          New-Item -ItemType Directory "$layout/app","$layout/provider","$layout/Assets","$layout/Public" -Force | Out-Null
+          Copy-Item -Recurse build/windows/x64/runner/Release/* "$layout/app/"
+          Copy-Item -Recurse provider_out/* "$layout/provider/"
+          Copy-Item assets/cats/tabby_awake.png "$layout/Assets/icon.png"
+          Copy-Item assets/cats/tabby_asleep.png "$layout/Assets/screenshot.png"
+          (Get-Content windows/msix/AppxManifest.xml) -replace '__VERSION__', "1.1.$env:GITHUB_RUN_NUMBER.0" | Set-Content "$layout/AppxManifest.xml"
+          $makeappx = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\makeappx.exe" | Sort-Object FullName -Descending | Select-Object -First 1
+          & $makeappx pack /d $layout /p NappyCat.msix /nv
+          if ($LASTEXITCODE -ne 0) { throw "makeappx failed" }
+          $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=NappyCat" -CertStoreLocation Cert:\CurrentUser\My -NotAfter (Get-Date).AddYears(5)
+          Export-Certificate -Cert $cert -FilePath NappyCat.cer | Out-Null
+          $pw = ConvertTo-SecureString "nappycat" -Force -AsPlainText
+          Export-PfxCertificate -Cert $cert -FilePath cert.pfx -Password $pw | Out-Null
+          $signtool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\signtool.exe" | Sort-Object FullName -Descending | Select-Object -First 1
+          & $signtool sign /fd SHA256 /f cert.pfx /p nappycat NappyCat.msix
+          if ($LASTEXITCODE -ne 0) { throw "signtool failed" }
+      - name: Install MSIX on runner (verify)
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          Import-Certificate -FilePath NappyCat.cer -CertStoreLocation Cert:\LocalMachine\TrustedPeople | Out-Null
+          if (-not (Get-AppxPackage -Name "Microsoft.WindowsAppRuntime.1.6*")) {
+            Invoke-WebRequest "https://aka.ms/windowsappsdk/1.6/latest/windowsappruntimeinstall-x64.exe" -OutFile runtime.exe
+            Start-Process .\runtime.exe -ArgumentList "--quiet" -Wait
+          }
+          Add-AppxPackage NappyCat.msix
+          Get-AppxPackage -Name "NappyCat.Desktop" | Format-List Name, Version, PackageFamilyName, InstallLocation
+          # Provider self-test: prints the Adaptive Card JSON it would serve.
+          & provider_out\NappyCatWidgetProvider.exe --selftest
       - name: Publish zip to builds branch
         shell: bash
         run: |
           mkdir /tmp/out && cp NappyCat-windows.zip smoke.png smoke.txt /tmp/out/
+          cp NappyCat.msix NappyCat.cer windows/msix/install.ps1 /tmp/out/ 2>/dev/null || echo "msix not built this run"
           cd /tmp/out
           git init -b builds
           git config user.name ci
           git config user.email ci@nappycat
           git add NappyCat-windows.zip smoke.png smoke.txt
+          git add NappyCat.msix NappyCat.cer install.ps1 2>/dev/null || true
           git commit -m "windows build $GITHUB_SHA"
           git push --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" builds

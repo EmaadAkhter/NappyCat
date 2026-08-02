@@ -357,7 +357,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
                   payload: payload,
                   // Desktop-widget mode: a small pinned browser/PWA window
                   // showing just the cat. Web-only by construction.
-                  mini: kIsWeb && Uri.base.queryParameters['mini'] == '1',
+                  mini: Config.mini,
                   onEditName: () => _editName(context),
                   onChangeCat: () => _changeCat(context),
                   onOpenJournal: () => Navigator.of(context).push(

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MSIX manifest for the Windows 11 Widgets Board widget. The plain zip build
+  stays the primary distribution; this package exists because widget providers
+  MUST have package identity - there is no unpackaged path to the board.
+  Publisher must exactly match the signing cert subject (CI generates
+  CN=NappyCat). __VERSION__ is substituted by CI.
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap uap3 com rescap">
+
+  <Identity Name="NappyCat.Desktop" Publisher="CN=NappyCat" Version="__VERSION__" ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>NappyCat</DisplayName>
+    <PublisherDisplayName>NappyCat</PublisherDisplayName>
+    <Logo>Assets\icon.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.22621.0" MaxVersionTested="10.0.26100.0" />
+    <PackageDependency Name="Microsoft.WindowsAppRuntime.1.6" MinVersion="6000.0.0.0"
+      Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+
+  <Capabilities>
+    <Capability Name="internetClient" />
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+
+  <Applications>
+    <Application Id="App" Executable="app\NappyCat.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="NappyCat"
+        Description="A cozy cat that carries letters between two people"
+        Square150x150Logo="Assets\icon.png" Square44x44Logo="Assets\icon.png"
+        BackgroundColor="transparent" />
+      <Extensions>
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:ExeServer Executable="provider\NappyCatWidgetProvider.exe"
+              DisplayName="NappyCat Widget Provider" Arguments="-RegisterProcessAsComServer">
+              <com:Class Id="0cbbd0fe-781d-40fe-955b-b208d0a06720" DisplayName="NappyCat Widget" />
+            </com:ExeServer>
+          </com:ComServer>
+        </com:Extension>
+        <uap3:Extension Category="windows.appExtension">
+          <uap3:AppExtension Name="com.microsoft.windows.widgets" DisplayName="NappyCat"
+            Id="nappycat" PublicFolder="Public">
+            <uap3:Properties>
+              <WidgetProvider>
+                <ProviderIcons>
+                  <Icon Path="Assets\icon.png" />
+                </ProviderIcons>
+                <Activation>
+                  <CreateInstance ClassId="0cbbd0fe-781d-40fe-955b-b208d0a06720" />
+                </Activation>
+                <Definitions>
+                  <Definition Id="nappycat.cat" DisplayName="NappyCat"
+                    Description="Their cat, asleep until a letter arrives">
+                    <Capabilities>
+                      <Capability>
+                        <Size Name="small" />
+                      </Capability>
+                      <Capability>
+                        <Size Name="medium" />
+                      </Capability>
+                      <Capability>
+                        <Size Name="large" />
+                      </Capability>
+                    </Capabilities>
+                    <ThemeResources>
+                      <Icons>
+                        <Icon Path="Assets\icon.png" />
+                      </Icons>
+                      <Screenshots>
+                        <Screenshot Path="Assets\screenshot.png" DisplayAltText="NappyCat widget" />
+                      </Screenshots>
+                    </ThemeResources>
+                  </Definition>
+                </Definitions>
+              </WidgetProvider>
+            </uap3:Properties>
+          </uap3:AppExtension>
+        </uap3:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+</Package>

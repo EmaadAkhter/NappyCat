@@ -13,6 +13,10 @@ class Config {
   static const env = String.fromEnvironment('TIDAL_ENV', defaultValue: 'dev');
   static bool get isDev => env != 'prod';
 
+  /// Widget mode: just the cat card in a small window. Set once at startup —
+  /// from `?mini=1` on the web, from the `--mini` flag on desktop.
+  static bool mini = false;
+
   /// How long an opened letter stays readable.
   static Duration get openTtl =>
       isDev ? const Duration(minutes: 2) : const Duration(hours: 16);
