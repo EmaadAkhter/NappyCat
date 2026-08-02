@@ -126,13 +126,15 @@ jobs:
         run: |
           mkdir /tmp/out && cp NappyCat-windows.zip smoke.png smoke.txt /tmp/out/
           cp smoke-widget.png /tmp/out/ 2>/dev/null || true
-          cp NappyCat.msix NappyCat.cer windows/msix/install.ps1 /tmp/out/ 2>/dev/null || echo "msix not built this run"
+          cp windows/msix/install.ps1 windows/msix/setup.ps1 windows/msix/setup.cmd /tmp/out/
+          cp NappyCat.msix NappyCat.cer /tmp/out/ 2>/dev/null || echo "msix not built this run"
           cd /tmp/out
           git init -b builds
           git config user.name ci
           git config user.email ci@nappycat
           git add NappyCat-windows.zip smoke.png smoke.txt
           git add smoke-widget.png 2>/dev/null || true
-          git add NappyCat.msix NappyCat.cer install.ps1 2>/dev/null || true
+          git add install.ps1 setup.ps1 setup.cmd
+          git add NappyCat.msix NappyCat.cer 2>/dev/null || true
           git commit -m "windows build $GITHUB_SHA"
           git push --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" builds
