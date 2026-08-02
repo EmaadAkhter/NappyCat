@@ -33,14 +33,35 @@ jobs:
         with:
           name: NappyCat-windows
           path: NappyCat-windows.zip
+      # The runner IS a Windows box — boot the app on it and photograph the
+      # screen. Proves the exe actually launches, renders, and survives
+      # Firebase init on real Windows, not just that it compiled.
+      - name: Smoke test
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem build/windows/x64/runner/Release -Filter *.exe | Select-Object -First 1
+          Start-Process $exe.FullName
+          Start-Sleep 30
+          $p = Get-Process ($exe.BaseName) -ErrorAction SilentlyContinue
+          if ($p) { "ALIVE title='$($p.MainWindowTitle)'" | Out-File smoke.txt }
+          else { "DEAD after 30s" | Out-File smoke.txt }
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+          $b = [System.Windows.Forms.SystemInformation]::VirtualScreen
+          $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+          $g = [System.Drawing.Graphics]::FromImage($bmp)
+          $g.CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
+          $bmp.Save("smoke.png")
+          Get-Content smoke.txt
+          Stop-Process -Name ($exe.BaseName) -Force -ErrorAction SilentlyContinue
       - name: Publish zip to builds branch
         shell: bash
         run: |
-          mkdir /tmp/out && cp NappyCat-windows.zip /tmp/out/
+          mkdir /tmp/out && cp NappyCat-windows.zip smoke.png smoke.txt /tmp/out/
           cd /tmp/out
           git init -b builds
           git config user.name ci
           git config user.email ci@nappycat
-          git add NappyCat-windows.zip
+          git add NappyCat-windows.zip smoke.png smoke.txt
           git commit -m "windows build $GITHUB_SHA"
           git push --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" builds
