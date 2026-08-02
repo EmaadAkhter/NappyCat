@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.mypeblo" "\0"
-            VALUE "FileDescription", "tidal" "\0"
+            VALUE "FileDescription", "NappyCat" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "tidal" "\0"
+            VALUE "InternalName", "NappyCat" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.mypeblo. All rights reserved." "\0"
-            VALUE "OriginalFilename", "tidal.exe" "\0"
-            VALUE "ProductName", "tidal" "\0"
+            VALUE "OriginalFilename", "NappyCat.exe" "\0"
+            VALUE "ProductName", "NappyCat" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
