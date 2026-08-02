@@ -43,9 +43,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 </plist>
 PLIST
 
-# Reuse the real app icon if a native build has ever produced one.
-ICNS="../../build/macos/Build/Products/Release/NappyCat.app/Contents/Resources/AppIcon.icns"
-[ -f "$ICNS" ] && cp "$ICNS" "$APP/Contents/Resources/AppIcon.icns"
+cp AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 
 codesign --force --deep -s - "$APP" 2>/dev/null || true
 

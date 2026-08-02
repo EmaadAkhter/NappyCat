@@ -22,7 +22,23 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
   http: ^1.6.0
+
+# The tomato-hood cat. `dart run flutter_launcher_icons` regenerates every
+# platform's icon set from the one source image.
+flutter_launcher_icons:
+  image_path: assets/icon/app_icon.png
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  web:
+    generate: true
+  windows:
+    generate: true
+    icon_size: 256
+  macos:
+    generate: true
 
 flutter:
   uses-material-design: true

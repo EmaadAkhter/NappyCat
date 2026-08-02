@@ -69,7 +69,7 @@ jobs:
           New-Item -ItemType Directory "$layout/app","$layout/provider","$layout/Assets","$layout/Public" -Force | Out-Null
           Copy-Item -Recurse build/windows/x64/runner/Release/* "$layout/app/"
           Copy-Item -Recurse provider_out/* "$layout/provider/"
-          Copy-Item assets/cats/tabby_awake.png "$layout/Assets/icon.png"
+          Copy-Item assets/icon/app_icon.png "$layout/Assets/icon.png"
           Copy-Item assets/cats/tabby_asleep.png "$layout/Assets/screenshot.png"
           (Get-Content windows/msix/AppxManifest.xml) -replace '__VERSION__', "1.1.$env:GITHUB_RUN_NUMBER.0" | Set-Content "$layout/AppxManifest.xml"
           $makeappx = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\makeappx.exe" | Sort-Object FullName -Descending | Select-Object -First 1
