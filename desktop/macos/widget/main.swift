@@ -106,6 +106,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   }
 }
 
+// Single instance: a second launch (DMG copy + installed copy, say) would
+// put a second cat in the menu bar and split the two surfaces across
+// processes. Yield to the one already running.
+let mine = Bundle.main.bundleIdentifier ?? "com.mypeblo.nappycat.widget"
+let already = NSRunningApplication.runningApplications(withBundleIdentifier: mine)
+  .filter { $0.processIdentifier != ProcessInfo.processInfo.processIdentifier }
+if !already.isEmpty {
+  already.first?.activate()
+  exit(0)
+}
+
 let app = NSApplication.shared
 let delegate = AppDelegate()
 app.delegate = delegate
