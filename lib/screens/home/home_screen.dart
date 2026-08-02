@@ -92,8 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
         LetterState.faded => 'it drifted away…',
         LetterState.empty => p.idleLine ?? 'zzz…',
       };
-      final awake =
-          state == LetterState.waiting || state == LetterState.open;
+      final awake = state == LetterState.waiting || state == LetterState.open;
       return Scaffold(
         body: SafeArea(
           child: Padding(
@@ -105,18 +104,46 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: Bouncy(
                         onTap: widget.onEditName,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Text(_greeting,
-                                style: CozyText.rounded(18,
-                                    weight: FontWeight.w700)),
-                            Text(
-                                'You are ${widget.myName} to them · tap to edit',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: CozyText.rounded(11,
-                                    color: CozyColors.textSecondary)),
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: CozyColors.cardBackground,
+                                shape: BoxShape.circle,
+                                boxShadow: cozyShadow(swiftUiRadius: 3, y: 1),
+                              ),
+                              child: CatIllustration(
+                                breed: widget.myBreed,
+                                awake: true,
+                                size: 30,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _greeting,
+                                    style: CozyText.rounded(
+                                      18,
+                                      weight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  Text(
+                                    'You are ${widget.myName} to them · tap to edit',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: CozyText.rounded(
+                                      11,
+                                      color: CozyColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -124,7 +151,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     PopupMenuButton<String>(
                       tooltip: 'more',
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       onSelected: (v) => switch (v) {
                         'journal' => widget.onOpenJournal(),
                         'cat' => widget.onChangeCat(),
@@ -132,14 +160,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                       itemBuilder: (_) => const [
                         PopupMenuItem(
-                            value: 'journal', child: Text('Still here')),
+                          value: 'journal',
+                          child: Text('Still here'),
+                        ),
                         PopupMenuItem(
-                            value: 'cat', child: Text('Change my cat')),
+                          value: 'cat',
+                          child: Text('Change my cat'),
+                        ),
                       ],
                       child: const Padding(
                         padding: EdgeInsets.all(6),
-                        child: Icon(Icons.more_horiz,
-                            size: 20, color: CozyColors.textMuted),
+                        child: Icon(
+                          Icons.more_horiz,
+                          size: 20,
+                          color: CozyColors.textMuted,
+                        ),
                       ),
                     ),
                   ],
@@ -159,18 +194,21 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Text(
                               line,
                               textAlign: TextAlign.center,
-                              style:
-                                  CozyText.rounded(15, weight: FontWeight.w600)
-                                      .copyWith(height: 1.35),
+                              style: CozyText.rounded(
+                                15,
+                                weight: FontWeight.w600,
+                              ).copyWith(height: 1.35),
                             ),
                           ),
                           if (state == LetterState.waiting ||
                               state == LetterState.open)
                             Padding(
                               padding: const EdgeInsets.only(top: 2),
-                              child: Text('— $partner',
-                                  textAlign: TextAlign.center,
-                                  style: CozyText.muted),
+                              child: Text(
+                                '— $partner',
+                                textAlign: TextAlign.center,
+                                style: CozyText.muted,
+                              ),
                             ),
                           // The tail points straight at the cat's head; the
                           // cat scales to whatever height is left.
@@ -178,9 +216,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: FittedBox(
                               fit: BoxFit.contain,
                               child: CatIllustration(
-                                  breed: p.partnerBreed,
-                                  awake: awake,
-                                  size: 330),
+                                breed: p.partnerBreed,
+                                awake: awake,
+                                size: 330,
+                              ),
                             ),
                           ),
                         ],
@@ -221,24 +260,38 @@ class _HomeScreenState extends State<HomeScreen> {
                         boxShadow: cozyShadow(swiftUiRadius: 4, y: 2),
                       ),
                       child: CatIllustration(
-                          breed: widget.myBreed, awake: true, size: 40),
+                        breed: widget.myBreed,
+                        awake: true,
+                        size: 40,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(_greeting,
-                              style: CozyText.rounded(22,
-                                  weight: FontWeight.w700)),
-                          Text('You are ${widget.myName} to them · tap to edit',
-                              style: CozyText.rounded(13,
-                                  color: CozyColors.textSecondary)),
+                          Text(
+                            _greeting,
+                            style: CozyText.rounded(
+                              22,
+                              weight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            'You are ${widget.myName} to them · tap to edit',
+                            style: CozyText.rounded(
+                              13,
+                              color: CozyColors.textSecondary,
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    const Icon(Icons.edit_outlined,
-                        size: 16, color: CozyColors.textMuted),
+                    const Icon(
+                      Icons.edit_outlined,
+                      size: 16,
+                      color: CozyColors.textMuted,
+                    ),
                   ],
                 ),
               ),
@@ -311,25 +364,27 @@ class _SmallAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Bouncy(
-        onTap: onTap,
-        child: DashedCard(
-          padding: 12,
-          strokeColor: CozyColors.softLavender,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 16, color: CozyColors.textSecondary),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: CozyText.caption),
-              ),
-            ],
+    onTap: onTap,
+    child: DashedCard(
+      padding: 12,
+      strokeColor: CozyColors.softLavender,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 16, color: CozyColors.textSecondary),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: CozyText.caption,
+            ),
           ),
-        ),
-      );
+        ],
+      ),
+    ),
+  );
 }
 
 /// The four-state hero, comic-vertical: bubble on top with its tail pointing
@@ -350,11 +405,11 @@ class _HeroLetterCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   String get _line => switch (state) {
-        LetterState.waiting => '✉️ a new letter — tap to read',
-        LetterState.open => payload.text ?? '',
-        LetterState.faded => 'it drifted away…',
-        LetterState.empty => payload.idleLine ?? 'zzz…',
-      };
+    LetterState.waiting => '✉️ a new letter — tap to read',
+    LetterState.open => payload.text ?? '',
+    LetterState.faded => 'it drifted away…',
+    LetterState.empty => payload.idleLine ?? 'zzz…',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -376,18 +431,24 @@ class _HeroLetterCard extends StatelessWidget {
               child: Text(
                 _line,
                 textAlign: TextAlign.center,
-                style: CozyText.rounded(16, weight: FontWeight.w600)
-                    .copyWith(height: 1.4),
+                style: CozyText.rounded(
+                  16,
+                  weight: FontWeight.w600,
+                ).copyWith(height: 1.4),
               ),
             ),
             if (state == LetterState.waiting || state == LetterState.open) ...[
               const SizedBox(height: 2),
-              Text('— $partner',
-                  textAlign: TextAlign.center, style: CozyText.muted),
+              Text(
+                '— $partner',
+                textAlign: TextAlign.center,
+                style: CozyText.muted,
+              ),
             ],
             const SizedBox(height: 6),
             Center(
-                child: CatIllustration(breed: breed, awake: awake, size: 210)),
+              child: CatIllustration(breed: breed, awake: awake, size: 210),
+            ),
           ],
         ),
       ),
@@ -439,8 +500,9 @@ class _MiniComposerState extends State<_MiniComposer> {
       _text.clear();
       FocusScope.of(context).unfocus();
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(error)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
     }
   }
 
@@ -471,8 +533,10 @@ class _MiniComposerState extends State<_MiniComposer> {
                         border: InputBorder.none,
                         counterText: '',
                         hintText: 'write to ${widget.partner}…',
-                        hintStyle: CozyText.rounded(14,
-                            color: CozyColors.textMuted),
+                        hintStyle: CozyText.rounded(
+                          14,
+                          color: CozyColors.textMuted,
+                        ),
                       ),
                     ),
                   )
@@ -485,8 +549,10 @@ class _MiniComposerState extends State<_MiniComposer> {
                           child: Text(
                             'next letter in ${_remaining(widget.canSendAt!, widget.now)}',
                             overflow: TextOverflow.ellipsis,
-                            style: CozyText.rounded(13,
-                                color: CozyColors.textSecondary),
+                            style: CozyText.rounded(
+                              13,
+                              color: CozyColors.textSecondary,
+                            ),
                           ),
                         ),
                       ],
@@ -502,7 +568,9 @@ class _MiniComposerState extends State<_MiniComposer> {
             height: 44,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: canWrite ? CozyColors.dustyPink : CozyColors.cardBackground,
+              color: canWrite
+                  ? CozyColors.dustyPink
+                  : CozyColors.cardBackground,
               shape: BoxShape.circle,
               boxShadow: cozyShadow(swiftUiRadius: 3, y: 1),
             ),
@@ -512,11 +580,13 @@ class _MiniComposerState extends State<_MiniComposer> {
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : Icon(Icons.send_rounded,
+                : Icon(
+                    Icons.send_rounded,
                     size: 18,
                     color: canWrite
                         ? CozyColors.textPrimary
-                        : CozyColors.textMuted),
+                        : CozyColors.textMuted,
+                  ),
           ),
         ),
       ],
@@ -557,8 +627,10 @@ class _TideCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(locked ? 'The cat is napping' : 'The cat is ready',
-                    style: CozyText.rounded(16, weight: FontWeight.w700)),
+                Text(
+                  locked ? 'The cat is napping' : 'The cat is ready',
+                  style: CozyText.rounded(16, weight: FontWeight.w700),
+                ),
                 Text(
                   locked
                       ? 'You can write again in ${_remaining(canSendAt!, now)}'
