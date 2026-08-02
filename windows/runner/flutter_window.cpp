@@ -1,5 +1,9 @@
 #include "flutter_window.h"
 
+#include <windowsx.h>
+
+#include <fstream>
+
 #include <optional>
 
 #include "flutter/generated_plugin_registrant.h"
@@ -70,6 +74,36 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
       // the desktop layer, under normal application windows.
       if (g_pin_to_desktop) {
         reinterpret_cast<WINDOWPOS*>(lparam)->hwndInsertAfter = HWND_BOTTOM;
+      }
+      break;
+    case WM_NCHITTEST: {
+      // Movable widget: the top strip (and Ctrl+anywhere) acts as a grab
+      // handle; the rest of the card stays tappable for the letter reveal.
+      if (!g_pin_to_desktop) break;
+      LRESULT hit = ::DefWindowProc(hwnd, message, wparam, lparam);
+      if (hit == HTCLIENT) {
+        POINT pt = {GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam)};
+        RECT rc;
+        ::GetWindowRect(hwnd, &rc);
+        const bool ctrl_held = (::GetKeyState(VK_CONTROL) & 0x8000) != 0;
+        if (ctrl_held || pt.y - rc.top < 28) {
+          return HTCAPTION;
+        }
+      }
+      return hit;
+    }
+    case WM_EXITSIZEMOVE:
+      // Remember where they parked the cat.
+      if (g_pin_to_desktop) {
+        RECT rc;
+        ::GetWindowRect(hwnd, &rc);
+        wchar_t* local_app_data = _wgetenv(L"LOCALAPPDATA");
+        if (local_app_data) {
+          std::wstring dir = std::wstring(local_app_data) + L"\\NappyCat";
+          ::CreateDirectoryW(dir.c_str(), nullptr);
+          std::ofstream f(dir + L"\\widget_pos.txt", std::ios::trunc);
+          if (f) f << rc.left << " " << rc.top;
+        }
       }
       break;
   }

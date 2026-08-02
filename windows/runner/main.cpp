@@ -2,6 +2,9 @@
 #include <flutter/flutter_view_controller.h>
 #include <windows.h>
 
+#include <fstream>
+#include <string>
+
 #include "flutter_window.h"
 #include "utils.h"
 
@@ -51,9 +54,25 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                            WS_EX_TOOLWINDOW);
     RECT work;
     ::SystemParametersInfo(SPI_GETWORKAREA, 0, &work, 0);
+    int x = work.right - 340 - 24;
+    int y = work.top + 24;
+    // Reopen where they last parked it, unless that spot fell off-screen
+    // (monitor unplugged, resolution change) - then the default corner.
+    wchar_t* local_app_data = _wgetenv(L"LOCALAPPDATA");
+    if (local_app_data) {
+      std::ifstream f(std::wstring(local_app_data) + L"\\NappyCat\\widget_pos.txt");
+      int sx, sy;
+      if (f >> sx >> sy) {
+        RECT probe = {sx, sy, sx + 340, sy + 460};
+        if (::MonitorFromRect(&probe, MONITOR_DEFAULTTONULL) != nullptr) {
+          x = sx;
+          y = sy;
+        }
+      }
+    }
     g_pin_to_desktop = true;
-    ::SetWindowPos(hwnd, HWND_BOTTOM, work.right - 340 - 24, work.top + 24,
-                   340, 460, SWP_FRAMECHANGED | SWP_NOACTIVATE);
+    ::SetWindowPos(hwnd, HWND_BOTTOM, x, y, 340, 460,
+                   SWP_FRAMECHANGED | SWP_NOACTIVATE);
   }
 
   ::MSG msg;
