@@ -58,9 +58,18 @@ jobs:
       # Widget providers must have package identity, so this wraps the same
       # Release build + a COM provider exe into a self-signed MSIX. Marked
       # continue-on-error so a packaging failure never blocks the plain zip.
+      # VS msbuild, not `dotnet publish`: the Windows App SDK's PRI-generation
+      # task only ships with Visual Studio, and the dotnet CLI can't load it.
       - name: Build widget provider
         continue-on-error: true
-        run: dotnet publish windows/widget_provider/NappyCatWidgetProvider.csproj -c Release -r win-x64 -o provider_out
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe | Select-Object -First 1
+          & $msbuild windows/widget_provider/NappyCatWidgetProvider.csproj /restore /t:Publish `
+            /p:Configuration=Release /p:Platform=x64 /p:PublishDir="$PWD\provider_out\" /v:m
+          if ($LASTEXITCODE -ne 0) { throw "msbuild publish failed" }
+          if (-not (Test-Path provider_out/NappyCatWidgetProvider.exe)) { throw "provider exe missing" }
       - name: Package + sign MSIX
         continue-on-error: true
         shell: pwsh
