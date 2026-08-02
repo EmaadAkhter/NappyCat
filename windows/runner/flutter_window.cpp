@@ -65,6 +65,13 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
     case WM_FONTCHANGE:
       flutter_controller_->engine()->ReloadSystemFonts();
       break;
+    case WM_WINDOWPOSCHANGING:
+      // Desktop-widget mode: refuse every raise so the card stays glued to
+      // the desktop layer, under normal application windows.
+      if (g_pin_to_desktop) {
+        reinterpret_cast<WINDOWPOS*>(lparam)->hwndInsertAfter = HWND_BOTTOM;
+      }
+      break;
   }
 
   return Win32Window::MessageHandler(hwnd, message, wparam, lparam);

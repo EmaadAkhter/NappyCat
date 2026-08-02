@@ -12,6 +12,7 @@ import 'services/services.dart';
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   Config.mini = args.contains('--mini') ||
+      args.contains('--widget') ||
       (kIsWeb && Uri.base.queryParameters['mini'] == '1');
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

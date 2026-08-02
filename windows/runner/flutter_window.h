@@ -8,6 +8,9 @@
 
 #include "win32_window.h"
 
+// Set by main.cpp in --widget mode; read by the message handler.
+extern bool g_pin_to_desktop;
+
 // A window that does nothing but host a Flutter view.
 class FlutterWindow : public Win32Window {
  public:

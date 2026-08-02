@@ -28,7 +28,15 @@ jobs:
       - run: flutter build windows --release --dart-define=TIDAL_ENV=prod
       - name: Package
         shell: pwsh
-        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath NappyCat-windows.zip
+        run: |
+          # Console-flash-free launcher for the desktop-pinned widget mode.
+          @'
+          Set fso = CreateObject("Scripting.FileSystemObject")
+          Set sh = CreateObject("WScript.Shell")
+          sh.CurrentDirectory = fso.GetParentFolderName(WScript.ScriptFullName)
+          sh.Run """NappyCat.exe"" --widget", 1, False
+          '@ | Set-Content "build/windows/x64/runner/Release/NappyCat Widget.vbs"
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath NappyCat-windows.zip
       - uses: actions/upload-artifact@v4
         with:
           name: NappyCat-windows
@@ -53,6 +61,15 @@ jobs:
           $g.CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
           $bmp.Save("smoke.png")
           Get-Content smoke.txt
+          Stop-Process -Name ($exe.BaseName) -Force -ErrorAction SilentlyContinue
+          # Round two: the desktop-pinned widget mode.
+          Start-Sleep 2
+          Start-Process $exe.FullName -ArgumentList "--widget"
+          Start-Sleep 25
+          $bmp2 = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+          $g2 = [System.Drawing.Graphics]::FromImage($bmp2)
+          $g2.CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
+          $bmp2.Save("smoke-widget.png")
           Stop-Process -Name ($exe.BaseName) -Force -ErrorAction SilentlyContinue
       # ---- Windows 11 Widgets Board package ----
       # Widget providers must have package identity, so this wraps the same
@@ -108,12 +125,14 @@ jobs:
         shell: bash
         run: |
           mkdir /tmp/out && cp NappyCat-windows.zip smoke.png smoke.txt /tmp/out/
+          cp smoke-widget.png /tmp/out/ 2>/dev/null || true
           cp NappyCat.msix NappyCat.cer windows/msix/install.ps1 /tmp/out/ 2>/dev/null || echo "msix not built this run"
           cd /tmp/out
           git init -b builds
           git config user.name ci
           git config user.email ci@nappycat
           git add NappyCat-windows.zip smoke.png smoke.txt
+          git add smoke-widget.png 2>/dev/null || true
           git add NappyCat.msix NappyCat.cer install.ps1 2>/dev/null || true
           git commit -m "windows build $GITHUB_SHA"
           git push --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" builds
