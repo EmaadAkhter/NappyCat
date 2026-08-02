@@ -4,13 +4,14 @@
 <dict>
   <key>CFBundleName</key><string>NappyCat</string>
   <key>CFBundleDisplayName</key><string>NappyCat</string>
-  <key>CFBundleIdentifier</key><string>com.mypeblo.nappycat.launcher</string>
-  <key>CFBundleVersion</key><string>1.0.0</string>
-  <key>CFBundleShortVersionString</key><string>1.0.0</string>
+  <key>CFBundleIdentifier</key><string>com.mypeblo.nappycat.widget</string>
+  <key>CFBundleVersion</key><string>1.1.0</string>
+  <key>CFBundleShortVersionString</key><string>1.1.0</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleExecutable</key><string>NappyCat</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>
-  <key>LSMinimumSystemVersion</key><string>10.13</string>
+  <key>LSMinimumSystemVersion</key><string>11.0</string>
+  <key>LSUIElement</key><true/>
   <key>NSHighResolutionCapable</key><true/>
 </dict>
 </plist>

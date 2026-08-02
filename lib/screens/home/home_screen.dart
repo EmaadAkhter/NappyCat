@@ -84,7 +84,15 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(12),
-              child: _HeroLetterCard(state: state, payload: p, partner: partner),
+              child: _HeroLetterCard(
+                state: state,
+                payload: p,
+                partner: partner,
+                // Same in-place reveal as everywhere else — without this the
+                // desktop widget showed the teaser but the tap did nothing.
+                onTap:
+                    state == LetterState.waiting ? widget.onOpenLetter : null,
+              ),
             ),
           ),
         ),
