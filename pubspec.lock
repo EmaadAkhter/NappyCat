@@ -608,10 +608,10 @@ packages:
     dependency: "direct main"
     description:
       name: workmanager
-      sha256: fd3437922b29269e8a545317c6804225a8f96b940c910f267702e3a03a938300
+      sha256: "065673b2a465865183093806925419d311a9a5e0995aa74ccf8920fd695e2d10"
       url: "https://pub.dev"
     source: hosted
-    version: "0.9.1+1"
+    version: "0.9.0+3"
   workmanager_android:
     dependency: transitive
     description:
