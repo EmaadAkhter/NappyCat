@@ -11,9 +11,9 @@ import 'services/services.dart';
 
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
-  Config.mini = args.contains('--mini') ||
-      args.contains('--widget') ||
-      (kIsWeb && Uri.base.queryParameters['mini'] == '1');
+  // The minimal widget layout IS the app now, on every platform — phones
+  // included. The flags/query only mattered while two layouts coexisted.
+  Config.mini = true;
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
